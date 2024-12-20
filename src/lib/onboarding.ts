@@ -55,7 +55,6 @@ export async function submitOnboardingProfile(data: OnboardingProfileData) {
     return response.data
 }
 
-// Fetch dropdown data utilities
 export async function getGenders() {
     const { data } = await api.get('/api/v1/options/genders')
     return data
@@ -78,6 +77,11 @@ export async function getNationalities() {
 
 export async function getLanguages() {
     const { data } = await api.get('/api/v1/options/languages')
+    return data
+}
+
+export async function getHairColor() {
+    const { data } = await api.get('/api/v1/options/hair-colors')
     return data
 }
 

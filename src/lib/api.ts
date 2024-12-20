@@ -6,9 +6,16 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
 })
 
+const excludedEndpoints: string[] = ['/api/auth/login', '/api/auth/register'];
+
 api.interceptors.request.use((config) => {
+  // Extract the request URL path
+  const { url } = config
+  // Check if the URL exactly matches any excluded endpoint
+  const isExcluded = excludedEndpoints.includes(url!)
+
   const token = getToken()
-  if (token && config.headers) {
+  if (!isExcluded && token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
@@ -25,7 +32,7 @@ api.interceptors.response.use(
           window.location.href = '/onboarding/profile'
         }
       } else {
-        // Maybe token expired or another 403 reason, logout and redirect to login
+        // Maybe token expired or another 403 reason, logout and redirect to login TODO
         removeToken()
         if (typeof window !== 'undefined') {
           window.location.href = '/login'

@@ -11,7 +11,8 @@ import {
   getOrientations,
   getEthnicities,
   getNationalities,
-  getLanguages 
+  getLanguages,
+  getHairColor, 
 } from '@/lib/onboarding'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +37,7 @@ export default function OnboardingProfilePage() {
   const [heightCm, setHeightCm] = useState<number | null>(null)
   const [hairColorId, setHairColorId] = useState<number | null>(null)
   const [nationalityId, setNationalityId] = useState<number | null>(null)
-  const [languageId, setLanguageId] = useState<number | null>(null) // changed from array to single
+  const [languageId, setLanguageId] = useState<number | null>(null)
 
   const [genders, setGenders] = useState<{id:number, name:string}[]>([])
   const [orientations, setOrientations] = useState<{id:number, name:string}[]>([])
@@ -61,17 +62,16 @@ export default function OnboardingProfilePage() {
         fetchedOrientations, 
         fetchedEthnicities, 
         fetchedNationalities, 
-        fetchedLanguages
+        fetchedLanguages,
+        fetchedHairColors
       ] = await Promise.all([
         getGenders(),
         getOrientations(),
         getEthnicities(),
         getNationalities(),
-        getLanguages()
-      ])
-
-      const hairColorsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/options/hair-colors`)
-      const { data: fetchedHairColors } = await hairColorsResponse.json()
+        getLanguages(),
+        getHairColor()
+      ]);
 
       setGenders(fetchedGenders)
       setOrientations(fetchedOrientations)
@@ -85,7 +85,6 @@ export default function OnboardingProfilePage() {
   }, [token, onBoardingStatus, router])
 
   const handleSubmit = async () => {
-    // Check all required fields
     if (
       name && bio && dateOfBirth && 
       genderId && orientationId && ethnicityId && heightCm && hairColorId && nationalityId && languageId
@@ -101,9 +100,12 @@ export default function OnboardingProfilePage() {
           heightCm,
           hairColorId,
           nationalityId,
-          languageIds: [languageId] // send as array, since API expects array
+          languageIds: [languageId]
         })
-        router.push('/')
+        console.log("filled");
+        // Move to Step 2
+        router.push('/onboarding/private-data')
+        console.log("Pushed");
       } catch (error) {
         console.error(error)
       }
@@ -203,7 +205,7 @@ export default function OnboardingProfilePage() {
         </SelectContent>
       </Select>
 
-      {/* Languages (single selection for now) */}
+      {/* Languages */}
       <Select onValueChange={(val) => setLanguageId(Number(val))}>
         <SelectTrigger className="mb-2">
           <SelectValue placeholder="Select Language" />

@@ -1,3 +1,4 @@
+// src/app/(onboarding)/private-data/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -16,7 +17,6 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 
-// Types
 interface MessagingApp {
   id: number
   name: string
@@ -27,21 +27,18 @@ interface SocialMediaPlatform {
   name: string
 }
 
-// Contact number structure in state
 interface ContactNumberForm {
   number: string
   countryCode: string
-  appIds: number[]  // multiple apps
+  appIds: number[]
   isPrivate: boolean
 }
 
-// Website structure in state
 interface WebsiteForm {
   url: string
   isPrivate: boolean
 }
 
-// Social Media structure in state
 interface SocialMediaForm {
   platformId: number | null
   url: string
@@ -52,11 +49,9 @@ export default function OnboardingPrivateDataPage() {
   const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
 
-  // State for dropdown data
   const [socialMediaPlatforms, setSocialMediaPlatforms] = useState<SocialMediaPlatform[]>([])
   const [messagingApps, setMessagingApps] = useState<MessagingApp[]>([])
 
-  // State for form fields
   const [contactNumbers, setContactNumbers] = useState<ContactNumberForm[]>([
     { number: '', countryCode: '+1', appIds: [], isPrivate: false }
   ])
@@ -68,19 +63,20 @@ export default function OnboardingPrivateDataPage() {
   ])
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-    if (onBoardingStatus === 'FINISHED') {
-      router.push('/')
-      return
-    }
-    if (onBoardingStatus === 'EMPTY') {
-      router.push('/onboarding/profile') 
-      return
-    }
-    // Here we assume onBoardingStatus is PROFILE or a later step, but not FINISHED.
+    // if (!token) {
+    //   router.push('/login')
+    //   return
+    // }
+    // if (onBoardingStatus === 'FINISHED') {
+    //   router.push('/')
+    //   return
+    // }
+    // if (onBoardingStatus === 'EMPTY') {
+    //   router.push('/onboarding/profile') 
+    //   return
+    // }
+    // We assume onBoardingStatus is at least PROFILE now.
+    console.log(token);
 
     async function fetchOptions() {
       const [fetchedSocialMedia, fetchedApps] = await Promise.all([
@@ -94,7 +90,6 @@ export default function OnboardingPrivateDataPage() {
     fetchOptions()
   }, [token, onBoardingStatus, router])
 
-  // Contact number handlers
   const addContactNumber = () => {
     setContactNumbers((prev) => [...prev, { number: '', countryCode: '+1', appIds: [], isPrivate: false }])
   }
@@ -109,7 +104,6 @@ export default function OnboardingPrivateDataPage() {
     )
   }
 
-  // Website handlers
   const addWebsite = () => {
     setWebsites((prev) => [...prev, { url: '', isPrivate: false }])
   }
@@ -124,7 +118,6 @@ export default function OnboardingPrivateDataPage() {
     )
   }
 
-  // Social Media handlers
   const addSocialMedia = () => {
     setSocialMediaAccounts((prev) => [...prev, { platformId: null, url: '', isPrivate: false }])
   }
@@ -152,7 +145,8 @@ export default function OnboardingPrivateDataPage() {
 
     try {
       await submitOnboardingPrivateData(payload)
-      router.push('/') 
+      // Move to step 3
+      router.push('/onboarding/media')
     } catch (error) {
       console.error(error)
     }
@@ -162,7 +156,6 @@ export default function OnboardingPrivateDataPage() {
     <div className="max-w-2xl mx-auto p-4">
       <h1 className="text-2xl mb-4">Onboarding - Private Data</h1>
 
-      {/* Contact Numbers Section */}
       <h2 className="text-xl mb-2">Contact Numbers</h2>
       {contactNumbers.map((contact, index) => (
         <div key={index} className="mb-4 border p-4 rounded space-y-2">
@@ -213,7 +206,6 @@ export default function OnboardingPrivateDataPage() {
       ))}
       <Button variant="secondary" className="mb-4" onClick={addContactNumber}>Add Another Contact</Button>
 
-      {/* Websites Section */}
       <h2 className="text-xl mb-2">Websites</h2>
       {websites.map((website, index) => (
         <div key={index} className="mb-4 border p-4 rounded space-y-2">
@@ -237,7 +229,6 @@ export default function OnboardingPrivateDataPage() {
       ))}
       <Button variant="secondary" className="mb-4" onClick={addWebsite}>Add Another Website</Button>
 
-      {/* Social Media Section */}
       <h2 className="text-xl mb-2">Social Media Accounts</h2>
       {socialMediaAccounts.map((account, index) => (
         <div key={index} className="mb-4 border p-4 rounded space-y-2">

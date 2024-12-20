@@ -1,3 +1,4 @@
+// src/app/(onboarding)/media/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -21,23 +22,23 @@ export default function OnboardingMediaPage() {
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-    // If Step 2 is not done (onBoardingStatus expected to be PRIVATE_CONTACT), redirect back
-    // For simplicity, let's just allow if not FINISHED and not EMPTY.
-    if (onBoardingStatus === 'FINISHED') {
-      router.push('/')
-      return
-    }
-    if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
-      // User hasn't reached Step 3 properly, redirect to previous steps if needed.
-      router.push('/onboarding/profile')
-      return
-    }
-    // If user is at Step 3 or beyond but not finished, they can stay here.
-    // OnBoarding status might be something like MEDIA_UPLOADED after finishing this step.
+    // if (!token) {
+    //   router.push('/login')
+    //   return
+    // }
+    // if (onBoardingStatus === 'FINISHED') {
+    //   router.push('/')
+    //   return
+    // }
+    // if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+    //   router.push('/onboarding/profile')
+    //   return
+    // }
+    // if (onBoardingStatus === 'PROFILE') {
+    //   router.push('/onboarding/private-data')
+    //   return
+    // }
+    // By now we should be at least `PRIVATE_CONTACT` to access media step.
   }, [token, onBoardingStatus, router])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,14 +63,12 @@ export default function OnboardingMediaPage() {
 
     try {
       setIsUploading(true)
-      // Upload each file in sequence with its order number
       for (let i = 0; i < selectedFiles.length; i++) {
         const media = selectedFiles[i]
         await uploadUserMedia(media.file, i + 1)
       }
-      // After all are uploaded successfully, move to step 4 or homepage
-      // For now, redirect to homepage or next step.
-      router.push('/')
+      // After successful upload, go to Step 4 (Location)
+      router.push('/onboarding/location')
     } catch (error) {
       console.error(error)
       alert('Error uploading images, please try again.')
