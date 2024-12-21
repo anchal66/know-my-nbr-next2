@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
 import { useRouter } from 'next/navigation'
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api'
 import { saveUserLocation, getLocationSuggestions } from '@/lib/onboarding'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 interface Suggestion {
   placeId: string
@@ -17,6 +19,7 @@ interface Suggestion {
 export default function OnboardingLocationPage() {
   const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
+  const dispatch = useDispatch()
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -133,6 +136,9 @@ export default function OnboardingLocationPage() {
         refreshToken: refreshToken
       })
       // On success, user onboarding should be FINISHED, redirect to home
+      // Immediately fetch user detail
+      const userData = await getUserDetails()
+      dispatch(setUserDetail(userData))
       router.push('/')
     } catch (error) {
       console.error(error)

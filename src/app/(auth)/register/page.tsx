@@ -10,6 +10,8 @@ import { useDispatch } from 'react-redux'
 import { setCredentials } from '@/state/slices/authSlice'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -30,11 +32,14 @@ export default function RegisterPage() {
           role: decoded.role,
           onBoardingStatus: decoded.onBoardingStatus
         }))
-        
+
         // If onboarding is not finished, redirect to step 1
         if (decoded.onBoardingStatus !== 'FINISHED') {
           router.push('/onboarding/profile')
         } else {
+          // Immediately fetch user detail
+          const userData = await getUserDetails()
+          dispatch(setUserDetail(userData))
           router.push('/')
         }
       }

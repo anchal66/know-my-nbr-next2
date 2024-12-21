@@ -9,10 +9,8 @@ const api = axios.create({
 const excludedEndpoints: string[] = ['/api/auth/login', '/api/auth/register'];
 
 api.interceptors.request.use((config) => {
-  // Extract the request URL path
   const { url } = config
-  // Check if the URL exactly matches any excluded endpoint
-  const isExcluded = excludedEndpoints.includes(url!)
+  const isExcluded = url ? excludedEndpoints.includes(url) : false
 
   const token = getToken()
   if (!isExcluded && token && config.headers) {
@@ -32,7 +30,7 @@ api.interceptors.response.use(
           window.location.href = '/onboarding/profile'
         }
       } else {
-        // Maybe token expired or another 403 reason, logout and redirect to login TODO
+        // Possibly token expired or another 403 reason
         removeToken()
         if (typeof window !== 'undefined') {
           window.location.href = '/login'

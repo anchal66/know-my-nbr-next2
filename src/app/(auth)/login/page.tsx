@@ -10,6 +10,8 @@ import { decodeToken } from '@/lib/jwt'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 export default function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState('')
@@ -28,7 +30,13 @@ export default function LoginPage() {
           username: decoded.username,
           role: decoded.role,
           onBoardingStatus: decoded.onBoardingStatus
-        }))
+        }));
+
+        // Immediately fetch user detail and store it
+      const userData = await getUserDetails()
+      dispatch(setUserDetail(userData))
+
+
         router.push('/')
       }
     } catch (error: any) {

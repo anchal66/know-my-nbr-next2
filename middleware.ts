@@ -1,34 +1,32 @@
-// middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { isTokenExpired } from '@/lib/jwt'
 
-// Protect all routes under /app by default
 export function middleware(req: NextRequest) {
   const token = req.cookies.get('auth_token')?.value
-  const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register')
+  const { pathname } = req.nextUrl
 
-  if (!token && !isAuthPage) {
+  const isAuthPage = pathname === '/login' || pathname === '/register'
+
+  const hasToken = !!token
+  const expired = token ? isTokenExpired(token) : true // If no token, treat as expired
+
+  // If user has a valid token and is on login/register, redirect to home
+  if (hasToken && !expired && isAuthPage) {
+    return NextResponse.redirect(new URL('/', req.url))
+  }
+
+  // If no token or expired token and not on auth page, redirect to login
+  if ((!hasToken || expired) && !isAuthPage) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  if (token && isAuthPage) {
-    // If logged in and trying to go to login or register page, redirect to home
-    if (!isTokenExpired(token)) {
-      return NextResponse.redirect(new URL('/', req.url))
-    }
-  }
-
-  if (token && isTokenExpired(token)) {
-    // Expired token - redirect to login
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
-
+  // Otherwise, allow the request
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/((?!_next|api|public).*)', // adjust matcher as needed
+    '/((?!_next|api|public|favicon.ico).*)',
   ],
 }
