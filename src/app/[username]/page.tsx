@@ -1,4 +1,4 @@
-// src/app/[username]/page.tsx
+// src/app/[nbr-direct]/page.tsx
 'use client'
 
 import { useEffect } from 'react'
@@ -8,6 +8,7 @@ import { RootState } from '@/state/store'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 export default function ProfilePage() {
   const { token, username } = useSelector((state: RootState) => state.auth)
@@ -54,19 +55,31 @@ export default function ProfilePage() {
     <div className="p-8 max-w-2xl mx-auto space-y-8">
       {/* Banner */}
       {bannerImage && (
-        <div className="w-full h-48 overflow-hidden rounded-md">
-          <img src={bannerImage.url} alt="Banner" className="w-full h-full object-cover" />
-        </div>
+        <div className="w-full h-48 overflow-hidden rounded-md relative">
+        <Image
+          src={bannerImage.url}
+          alt="Banner"
+          layout="fill"
+          objectFit="cover"
+          className="rounded-md"
+          priority={false} // Adjust priority as needed
+        />
+      </div>
       )}
 
       {/* Profile Image and Basic Info */}
       <div className="flex space-x-4 items-center">
         {profileImage && (
-          <img 
+          <div className="w-24 h-24 relative rounded-full overflow-hidden">
+          <Image
             src={profileImage.url}
             alt="Profile"
-            className="w-24 h-24 rounded-full object-cover"
+            layout="fill"
+            objectFit="cover"
+            className="rounded-full"
+            priority={false}
           />
+        </div>
         )}
         <div>
           <h2 className="text-2xl font-bold">{userProfile.name}</h2>
@@ -120,9 +133,16 @@ export default function ProfilePage() {
         <h3 className="text-xl font-semibold mb-2">Media Gallery</h3>
         <div className="flex gap-4 flex-wrap">
           {media.map(m => (
-            <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md">
-              <img src={m.url} alt="User media" className="object-cover w-full h-full" />
-            </div>
+            <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
+            <Image
+              src={m.url}
+              alt="User media"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-md"
+              priority={false}
+            />
+          </div>
           ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { uploadUserMedia } from '@/lib/onboarding'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 
 interface UploadedMedia {
   file: File
@@ -92,13 +93,16 @@ export default function OnboardingMediaPage() {
 
       <div className="flex flex-wrap gap-4 mb-4">
         {selectedFiles.map((media, index) => (
-          <div key={index} className="w-24 h-24 relative">
-            <img
-              src={media.previewUrl}
-              alt={`preview-${index}`}
-              className="w-full h-full object-cover rounded"
-            />
-          </div>
+          <div key={index} className="w-24 h-24 relative rounded overflow-hidden">
+          <Image
+            src={media.previewUrl}
+            alt={`preview-${index}`}
+            layout="fill"
+            objectFit="cover"
+            className="rounded"
+            priority={false}
+          />
+        </div>
         ))}
       </div>
 

@@ -1,3 +1,4 @@
+import { Link } from 'lucide-react'
 import React from 'react'
 
 export const metadata = {
@@ -12,10 +13,10 @@ export default function ContactPage() {
 
       <ul className="list-disc ml-5 mt-2">
         <li>
-          <strong>Email:</strong> <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a>
+          <strong>Email:</strong> <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link>
         </li>
         <li>
-          <strong>Website:</strong> <a href="https://knowmynbr.com">https://knowmynbr.com</a>
+          <strong>Website:</strong> <Link href="https://knowmynbr.com">https://knowmynbr.com</Link>
         </li>
       </ul>
 
