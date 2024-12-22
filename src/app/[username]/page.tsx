@@ -1,3 +1,4 @@
+// src/app/[username]/page.tsx
 'use client'
 
 import { useEffect } from 'react'
