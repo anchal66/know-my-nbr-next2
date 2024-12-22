@@ -19,6 +19,7 @@ export default function HomePage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl mb-4">Welcome, {username}</h1>
+      <p className="mb-4">This is your homepage.</p>
       <Button onClick={handleLogout}>Logout</Button>
     </div>
   )
