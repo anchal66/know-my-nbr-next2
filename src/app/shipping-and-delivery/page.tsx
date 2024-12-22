@@ -1,3 +1,4 @@
+import { Link } from 'lucide-react'
 import React from 'react'
 
 export const metadata = {
@@ -34,7 +35,7 @@ export default function ShippingDeliveryPage() {
       </ul>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">4. Damaged or Lost Shipments</h2>
-      <p>If an item arrives damaged, contact <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a> 
+      <p>If an item arrives damaged, contact <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link> 
       within 48 hours with photos. We will arrange a replacement or refund as appropriate.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">5. Updates</h2>

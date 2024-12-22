@@ -1,3 +1,4 @@
+import { Link } from 'lucide-react'
 import React from 'react'
 
 export const metadata = {
@@ -54,7 +55,7 @@ export default function PrivacyPage() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">6. Children’s Privacy</h2>
       <p>Our Website is not intended for individuals under 18. We do not knowingly collect 
-      data from minors. If you believe we have, contact us at <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a>.</p>
+      data from minors. If you believe we have, contact us at <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link>.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">7. International Transfers</h2>
       <p>If you access from outside India, your data may be transferred to India or other 
@@ -66,7 +67,7 @@ export default function PrivacyPage() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">9. Contact Us</h2>
       <p>For questions about this Privacy Policy, email us at 
-        <a href="mailto:help@knowmynbr.com"> help@knowmynbr.com</a>.</p>
+        <Link href="mailto:help@knowmynbr.com"> help@knowmynbr.com</Link>.</p>
     </main>
   )
 }

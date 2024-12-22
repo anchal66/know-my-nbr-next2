@@ -1,3 +1,4 @@
+import { Link } from 'lucide-react'
 import React from 'react'
 
 export const metadata = {
@@ -28,7 +29,7 @@ export default function CancellationRefundPage() {
       </ul>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">3. Transaction Errors</h2>
-      <p>For payment errors or technical issues, contact <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a> 
+      <p>For payment errors or technical issues, contact <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link> 
       within 48 hours. If valid, we’ll process a refund or credit.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">4. Chargebacks</h2>
@@ -36,7 +37,7 @@ export default function CancellationRefundPage() {
       Contact support first to resolve payment issues.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">5. Requesting a Refund</h2>
-      <p>Email <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a> with transaction details 
+      <p>Email <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link> with transaction details 
       and reason. We respond within 7 business days to confirm eligibility.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">6. Changes to This Policy</h2>

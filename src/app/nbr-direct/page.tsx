@@ -16,6 +16,7 @@ import {
   SelectItem
 } from "@/components/ui/select"
 import FilterModal from '../../components/FilterModal'
+import Image from 'next/image'
 
 export default function NbrDirectPage() {
   const userDetail: UserDetailResponse | null = useSelector((state: RootState) => state.user.detail)
@@ -169,11 +170,16 @@ export default function NbrDirectPage() {
               <li key={user.userId} className="border p-2 rounded flex items-center space-x-4">
                 {/* Show a primary media (orderNo=1) for profile pic if available */}
                 {user.media && user.media.length > 0 ? (
-                  <img
+                  <div className="w-16 h-16 relative rounded">
+                  <Image
                     src={user.media.find((m: any) => m.orderNo === 1)?.url || user.media[0].url}
-                    alt="profile"
-                    className="w-16 h-16 object-cover rounded"
+                    alt={`${user.name}'s profile`}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded"
+                    priority={false}
                   />
+                </div>
                 ) : (
                   <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center">No Image</div>
                 )}

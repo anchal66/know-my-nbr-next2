@@ -1,3 +1,4 @@
+import { Link } from 'lucide-react'
 import React from 'react'
 
 export const metadata = {
@@ -41,7 +42,7 @@ export default function TermsPage() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">5. Payments &amp; Refunds</h2>
       <p>Fees for subscriptions or coins are processed via Razorpay or other gateways. 
-      Refunds follow our <a href="/cancellation-and-refund">Cancellation &amp; Refund Policy</a>.</p>
+      Refunds follow our <Link href="/cancellation-and-refund">Cancellation &amp; Refund Policy</Link>.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">6. Intellectual Property</h2>
       <p>All content is owned by knowmynbr.com or its licensors, protected by copyright laws.</p>
@@ -62,7 +63,7 @@ export default function TermsPage() {
       <p>These Terms are governed by the laws of India, with disputes resolved in courts of [Your Jurisdiction], India.</p>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">11. Contact Us</h2>
-      <p>For questions about these Terms, email <a href="mailto:help@knowmynbr.com">help@knowmynbr.com</a>.</p>
+      <p>For questions about these Terms, email <Link href="mailto:help@knowmynbr.com">help@knowmynbr.com</Link>.</p>
     </main>
   )
 }
