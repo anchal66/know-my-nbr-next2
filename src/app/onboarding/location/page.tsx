@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
+import { setToken } from '@/lib/cookies'
+import { decodeToken } from '@/lib/jwt'
+import { setCredentials } from '@/state/slices/authSlice'
 
 interface Suggestion {
   placeId: string
@@ -130,16 +133,24 @@ export default function OnboardingLocationPage() {
         placeId: placeId || '',
         latitude: lat ? lat.toString() : '',
         longitude: lng ? lng.toString() : '',
-        name: '',
-        city: '',
         isActive: true,
-        refreshToken: refreshToken
       })
+      const token = data.refreshToken;
       // On success, user onboarding should be FINISHED, redirect to home
       // Immediately fetch user detail
-      const userData = await getUserDetails()
-      dispatch(setUserDetail(userData))
-      router.push('/')
+      setToken(token)
+      const decoded = decodeToken(token)
+      if (decoded) {
+        dispatch(setCredentials({
+          token,
+          username: decoded.username,
+          role: decoded.role,
+          onBoardingStatus: decoded.onBoardingStatus
+        }));
+        const userData = await getUserDetails()
+        dispatch(setUserDetail(userData))
+        router.push('/')
+      }
     } catch (error) {
       console.error(error)
       alert('Failed to finalize location. Please try again.')
@@ -156,7 +167,7 @@ export default function OnboardingLocationPage() {
       <p>We have detected your current location. If you want to change it, use the search box below.</p>
 
       <div className="relative">
-        <Input 
+        <Input
           placeholder="Search for a location..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -165,8 +176,8 @@ export default function OnboardingLocationPage() {
         {showSuggestions && suggestions.length > 0 && (
           <div className="absolute z-10 top-full left-0 w-full bg-white border shadow-md max-h-60 overflow-auto">
             {suggestions.map((s) => (
-              <div 
-                key={s.placeId} 
+              <div
+                key={s.placeId}
                 className="p-2 hover:bg-gray-200 cursor-pointer"
                 onClick={() => handleSuggestionClick(s)}
               >
