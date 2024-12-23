@@ -20,9 +20,10 @@ interface Suggestion {
 }
 
 export default function OnboardingLocationPage() {
-  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
+  const { token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
   const dispatch = useDispatch()
+  let locationChanged = false;
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
@@ -73,23 +74,25 @@ export default function OnboardingLocationPage() {
 
       // First call: save current location
       try {
-        const data = await saveUserLocation({
-          latitude: currentLat.toString(),
-          longitude: currentLng.toString(),
-          name: '',
-          city: '',
-          isActive: true
-        })
-        // Response includes placeId, name, city, and refreshToken
-        if (data.placeId) setPlaceId(data.placeId)
-        if (data.name) setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
-        if (data.refreshToken) setRefreshToken(data.refreshToken)
+        if (!locationChanged) {
+          const data = await saveUserLocation({
+            latitude: currentLat.toString(),
+            longitude: currentLng.toString(),
+            name: '',
+            city: '',
+            isActive: true
+          })
+          // Response includes placeId, name, city, and refreshToken
+          if (data.placeId) setPlaceId(data.placeId)
+          if (data.name) setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
+          if (data.refreshToken) setRefreshToken(data.refreshToken)
+        }
       } catch (error) {
         console.error(error)
         // If save fails, handle error or show user a message
       }
     })
-  }, [token, onBoardingStatus, router])
+  }, [token, router])
 
   // Handle search suggestions
   useEffect(() => {
@@ -119,7 +122,8 @@ export default function OnboardingLocationPage() {
       setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
       setShowSuggestions(false)
       setSearchTerm('')
-      if (data.refreshToken) setRefreshToken(data.refreshToken) // update refreshToken if changed
+      locationChanged = true;
+      if (data.refreshToken) setRefreshToken(data.refreshToken)
     } catch (err) {
       console.error(err)
     }
