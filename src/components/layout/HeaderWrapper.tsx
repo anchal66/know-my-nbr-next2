@@ -5,10 +5,9 @@ import { RootState } from '@/state/store'
 import { Header } from './Header'
 
 export function HeaderWrapper() {
-  const { isLoggedIn, hasFinishedOnboarding } = useSelector((state: RootState) => ({
-    isLoggedIn: !!state.auth.token && !!state.auth.username,
-    hasFinishedOnboarding: state.auth.onBoardingStatus === 'FINISHED',
-  }))
+  // Each is a simple boolean
+  const isLoggedIn = useSelector((state: RootState) => !!state.auth.token && !!state.auth.username)
+  const hasFinishedOnboarding = useSelector((state: RootState) => state.auth.onBoardingStatus === 'FINISHED')
 
   if (!isLoggedIn || !hasFinishedOnboarding) {
     return null
@@ -16,3 +15,4 @@ export function HeaderWrapper() {
 
   return <Header />
 }
+

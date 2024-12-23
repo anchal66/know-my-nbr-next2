@@ -1,8 +1,9 @@
+// src/components/HeaderAddFundsModal.tsx
 'use client'
 
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { addFunds, fetchWalletBalance } from '@/state/slices/walletSlice'
+import { addFunds, verifyPayment, fetchWalletBalance } from '@/state/slices/walletSlice'
 import { AppDispatch } from '@/state/store'
 
 interface HeaderAddFundsModalProps {
@@ -19,10 +20,28 @@ export function HeaderAddFundsModal({ onClose }: HeaderAddFundsModalProps) {
     try {
       setLoading(true)
       setError(null)
-      // For example, we choose "DUMMY" or "INSTAMOJO" depending on what you want:
-      await dispatch(addFunds({ amount, paymentGateway: 'INSTAMOJO', token: '' })).unwrap()
-      // Re-fetch wallet balance
+
+      // 1) Start addFunds => get { transactionId, gatewayOrderId, status }
+      const addResult = await dispatch(
+        addFunds({ amount, paymentGateway: 'MojoJo', token: '' })
+      ).unwrap()
+
+      // If addFunds is successful, addResult has { transactionId, gatewayOrderId, status }
+      const { transactionId, gatewayOrderId } = addResult
+
+      // 2) Then verify payment
+      // signature can be "randomToken" or a real signature from your gateway
+      await dispatch(
+        verifyPayment({
+          gatewayOrderId,
+          signature: 'randomToken',
+          transactionId,
+        })
+      ).unwrap()
+
+      // 3) Finally, re-fetch balance
       await dispatch(fetchWalletBalance())
+
       onClose()
     } catch (err: any) {
       setError(err)

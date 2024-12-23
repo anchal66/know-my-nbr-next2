@@ -1,3 +1,4 @@
+// src/state/slices/walletSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '@/lib/api'
 
@@ -13,19 +14,33 @@ const initialState: WalletState = {
   error: null,
 }
 
-// Thunk to fetch wallet balance
-export const fetchWalletBalance = createAsyncThunk('wallet/fetchBalance', async () => {
-  const response = await api.get('/api/v1/wallet/balance')
-  // response.data is { balance: number } according to WalletResponse
-  return response.data.balance
-})
+interface AddFundsResponse {
+  transactionId: string
+  status: string
+  gatewayOrderId: string
+}
 
-// Thunk to add funds
+interface VerifyPaymentResponse {
+  message: string
+}
+
+// 1) Thunk to fetch wallet balance
+export const fetchWalletBalance = createAsyncThunk(
+  'wallet/fetchBalance',
+  async () => {
+    const response = await api.get('/api/v1/wallet/balance')
+    // example: { balance: number }
+    return response.data.balance
+  }
+)
+
+// 2) Thunk to add funds => returns transaction + gateway info
 export const addFunds = createAsyncThunk<
-  // Return type of the fulfilled action
-  number,
-  // Payload (amount to add) for the thunk
+  // Fulfilled action's `payload` type
+  AddFundsResponse,
+  // The argument we pass to the thunk
   { amount: number; paymentGateway: string; token: string },
+  // Rejected action's payload type
   { rejectValue: string }
 >(
   'wallet/addFunds',
@@ -33,18 +48,38 @@ export const addFunds = createAsyncThunk<
     try {
       const payload = {
         amount,
-        paymentGateway,
         paymentDetails: {
-          token: 'DummyOrInstamojoToken',
+          token: 'randomToken', // or pass in from arg
         },
+        paymentGateway, // e.g., "MojoJo" in your example
       }
 
+      // e.g. POST /api/v1/wallet/add-funds
+      // returns { transactionId, status, gatewayOrderId }
       const { data } = await api.post('/api/v1/wallet/add-funds', payload)
-      // data is AddFundsResponse { transactionId, status, gatewayOrderId }
-      // For now, we'll assume we eventually re-fetch the balance after success
-      return amount
+      return data // matches AddFundsResponse
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to add funds')
+    }
+  }
+)
+
+// 3) Thunk to verify payment => finalize the fund addition
+export const verifyPayment = createAsyncThunk<
+  VerifyPaymentResponse,
+  { gatewayOrderId: string; signature: string; transactionId: string },
+  { rejectValue: string }
+>(
+  'wallet/verifyPayment',
+  async ({ gatewayOrderId, signature, transactionId }, { rejectWithValue }) => {
+    try {
+      // POST /api/v1/wallet/verify-payment
+      // body: { gatewayOrderId, signature, transactionId }
+      const payload = { gatewayOrderId, signature, transactionId }
+      const { data } = await api.post('/api/v1/wallet/verify-payment', payload)
+      return data // e.g. { message: 'Payment verified successfully.' }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to verify payment')
     }
   }
 )
@@ -74,11 +109,26 @@ const walletSlice = createSlice({
       state.error = null
     })
     builder.addCase(addFunds.fulfilled, (state, { payload }) => {
-      // Optionally, just re-fetch the balance, or do:
-      state.balance += payload // If the transaction is guaranteed success
+      // We do NOT increment the balance yet because payment is not fully verified
+      // state.balance += <some amount> // but let's wait for verify
       state.loading = false
     })
     builder.addCase(addFunds.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.payload as string
+    })
+
+    // verifyPayment
+    builder.addCase(verifyPayment.pending, (state) => {
+      state.loading = true
+      state.error = null
+    })
+    builder.addCase(verifyPayment.fulfilled, (state, { payload }) => {
+      // Payment verified successfully => now we can re-fetch or do next step
+      // We'll let the caller do fetchWalletBalance() if needed
+      state.loading = false
+    })
+    builder.addCase(verifyPayment.rejected, (state, action) => {
       state.loading = false
       state.error = action.payload as string
     })
