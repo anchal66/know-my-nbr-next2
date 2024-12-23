@@ -112,12 +112,25 @@ export default function ProfilePage() {
 
   function handleFollowed(endDate: string) {
     setShowFollowModal(false)
-    // Set isFollowed to true in local state. Also store the endDate so we can show it
-    setProfileData({ 
-      ...profileData, 
-      isFollowed: true 
+  
+    // 1) Mark local isFollowed as true
+    setProfileData((prev: ProfileData) => {
+      if (!prev) return prev
+      return { ...prev, isFollowed: true }
     })
     setFollowEndDate(endDate)
+  
+    // 2) Re-fetch the user profile
+    reFetchProfile(userProfile.username)
+  }
+  
+  async function reFetchProfile(name: string) {
+    try {
+      const data = await getOtherUserProfileById(name)
+      setProfileData(data)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
+import Link from 'next/link'
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -43,19 +44,46 @@ export default function RegisterPage() {
           router.push('/')
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
+      // Optionally, display error message to the user
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm p-4 border rounded">
-        <h1 className="text-xl mb-4">Register</h1>
-        <Input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} className="mb-2" />
-        <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="mb-2" />
-        <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mb-4" />
-        <Button onClick={handleRegister}>Register</Button>
+      <div className="w-full max-w-sm p-6 border rounded shadow-md">
+        <h1 className="text-2xl font-semibold mb-6 text-center">Register</h1>
+        <Input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="mb-4"
+          aria-label="Username"
+        />
+        <Input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mb-4"
+          aria-label="Email"
+          type="email"
+        />
+        <Input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mb-6"
+          aria-label="Password"
+        />
+        <Button onClick={handleRegister} className="w-full mb-4">Register</Button>
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-500 hover:underline">
+            Login here
+          </Link>
+        </p>
       </div>
     </div>
   )
