@@ -15,6 +15,7 @@ import { setUserDetail } from '@/state/slices/userSlice'
 import Link from 'next/link'
 
 export default function RegisterPage() {
+  console.log("Register...");
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
