@@ -11,7 +11,7 @@ export interface CityUserCount {
 }
 
 /** Filter option item (id, name) */
-interface OptionItem {
+export interface OptionItem {
   id: number
   name: string
 }

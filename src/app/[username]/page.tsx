@@ -1,21 +1,34 @@
-// src/app/[nbr-direct]/page.tsx
+// src/app/[username]/page.tsx
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter, useParams } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/state/store'
-import { getUserDetails } from '@/lib/user'
+import { getUserDetails, LocationItem, MediaItem } from '@/lib/user'
+import {
+  getOtherUserProfileById,
+  OtherUserDetailResponse
+} from '@/lib/userProfile'
 import { setUserDetail } from '@/state/slices/userSlice'
-import { Button } from '@/components/ui/button'
 import Image from 'next/image'
+import { OptionItem } from '@/lib/nbrDirect'
+
+type ProfileData = any 
 
 export default function ProfilePage() {
-  const { token, username } = useSelector((state: RootState) => state.auth)
-  const userDetail = useSelector((state: RootState) => state.user.detail)
+  const { token, username: loggedInUsername } = useSelector((state: RootState) => state.auth)
+  const currentUserState = useSelector((state: RootState) => state.user.detail)
+
   const dispatch = useDispatch()
   const router = useRouter()
   const params = useParams() as { username: string }
+
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const isMyProfile = params.username === loggedInUsername
+  const otherUserName = params.username;
 
   useEffect(() => {
     if (!token) {
@@ -23,77 +36,179 @@ export default function ProfilePage() {
       return
     }
 
-    if (params.username !== username) {
-      // If needed, redirect or handle viewing another user's profile
-      // For now, we allow viewing anyway.
-    }
-
-    async function fetchData() {
+    async function fetchMyProfile() {
       try {
         const data = await getUserDetails()
         dispatch(setUserDetail(data))
+        setProfileData(data)
       } catch (error) {
         console.error(error)
+      } finally {
+        setLoading(false)
       }
     }
 
-    // Fetch user details if not already in store
-    if (!userDetail) {
-      fetchData()
+    async function fetchOtherProfile(username: string) {
+      try {
+        const data: OtherUserDetailResponse = await getOtherUserProfileById(username)
+        setProfileData(data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [token, router, username, params.username, userDetail, dispatch])
 
-  if (!userDetail) {
+    setLoading(true)
+    if (isMyProfile) {
+      // If we have it in Redux, no need to re-fetch
+      if (currentUserState) {
+        setProfileData(currentUserState)
+        setLoading(false)
+      } else {
+        fetchMyProfile()
+      }
+    } else {
+      if (!otherUserName) {
+        console.error('No userId in query param. Cannot fetch other user profile.')
+        setLoading(false)
+        return
+      }
+      fetchOtherProfile(otherUserName)
+    }
+  }, [token, router, dispatch, isMyProfile, currentUserState, otherUserName])
+
+  if (loading) {
     return <div className="p-8">Loading profile...</div>
   }
+  if (!profileData) {
+    return <div className="p-8">Failed to load profile.</div>
+  }
 
-  const { userProfile, contactNumbers, socialMediaAccounts, websites, media, locations } = userDetail
-  const bannerImage = media.find(m => m.orderNo === 2)
-  const profileImage = media.find(m => m.orderNo === 1)
+  // Unpack
+  const {
+    userProfile,
+    contactNumbers,
+    socialMediaAccounts,
+    websites,
+    media,
+    locations,
+    isFollowed,
+    hasContactNumbers,
+    hasSocialMediaAccounts,
+    hasWebsites
+  } = profileData
+
+  // My profile => always can see everything
+  // Another user => check isFollowed
+  const canViewContacts = isMyProfile || isFollowed
+  const canViewSocial = isMyProfile || isFollowed
+  const canViewWebsites = isMyProfile || isFollowed
+
+  // Grab banner and profile images
+  const bannerImage = media.find((m: MediaItem) => m.orderNo === 2)
+  const profileImage = media.find((m: MediaItem) => m.orderNo === 1)
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-8">
-      {/* Banner */}
-      {bannerImage && (
-        <div className="w-full h-48 overflow-hidden rounded-md relative">
+      <Banner bannerImage={bannerImage} />
+
+      <ProfileHeader
+        profileImage={profileImage}
+        name={userProfile.name}
+        username={userProfile.username}
+        bio={userProfile.bio}
+      />
+
+      <BasicDetails userProfile={userProfile} />
+
+      <MediaGallery media={media} />
+
+      <ContactNumbers
+        canView={canViewContacts}
+        hasContactNumbers={hasContactNumbers}
+        contactNumbers={contactNumbers}
+        name={userProfile.name}
+      />
+
+      <SocialMedia
+        canView={canViewSocial}
+        hasSocialMediaAccounts={hasSocialMediaAccounts}
+        socialMediaAccounts={socialMediaAccounts}
+        name={userProfile.name}
+      />
+
+      <Websites
+        canView={canViewWebsites}
+        hasWebsites={hasWebsites}
+        websites={websites}
+        name={userProfile.name}
+      />
+
+      <Locations locations={locations} />
+    </div>
+  )
+}
+
+/* ------------------- Smaller Components ------------------- */
+
+// 1. Banner
+function Banner({ bannerImage }: { bannerImage?: MediaItem }) {
+  if (!bannerImage) return null
+  return (
+    <div className="w-full h-48 overflow-hidden rounded-md relative">
+      <Image
+        src={bannerImage.url}
+        alt="Banner"
+        fill
+        className="object-cover rounded-md"
+      />
+    </div>
+  )
+}
+
+// 2. ProfileHeader
+function ProfileHeader({
+  profileImage,
+  name,
+  username,
+  bio
+}: {
+  profileImage?: MediaItem
+  name: string
+  username: string
+  bio: string
+}) {
+  return (
+    <div className="flex space-x-4 items-center">
+      {profileImage && (
+        <div className="w-24 h-24 relative rounded-full overflow-hidden">
           <Image
-            src={bannerImage.url}
-            alt="Banner"
+            src={profileImage.url}
+            alt="Profile"
             fill
-            className="object-cover rounded-md"
-            priority={false}
-            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover rounded-full"
           />
         </div>
       )}
-
-      {/* Profile Image and Basic Info */}
-      <div className="flex space-x-4 items-center">
-        {profileImage && (
-          <div className="w-24 h-24 relative rounded-full overflow-hidden">
-            <Image
-              src={profileImage.url}
-              alt="Profile"
-              fill
-              className="object-cover rounded-full"
-              priority={false}
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-
-          </div>
-        )}
-        <div>
-          <h2 className="text-2xl font-bold">{userProfile.name}</h2>
-          <p className="text-sm text-gray-600">@{userProfile.username}</p>
-        </div>
+      <div>
+        <h2 className="text-2xl font-bold">{name}</h2>
+        <p className="text-sm text-gray-600">@{username}</p>
       </div>
+    </div>
+  )
+}
 
+// 3. BasicDetails
+function BasicDetails({ userProfile }: { userProfile: any }) {
+  // you could define a more specific type for userProfile
+  return (
+    <>
       <div>
         <h3 className="text-xl font-semibold">Bio</h3>
         <p>{userProfile.bio}</p>
       </div>
 
-      {/* Details */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <h4 className="font-semibold">Date of Birth</h4>
@@ -125,81 +240,158 @@ export default function ProfilePage() {
         </div>
         <div>
           <h4 className="font-semibold">Languages</h4>
-          <p>{userProfile.languages.map(l => l.name).join(', ')}</p>
+          {userProfile.languages.map((l: OptionItem) => l.name).join(', ')}
         </div>
       </div>
+    </>
+  )
+}
 
-      {/* Media Gallery */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Media Gallery</h3>
-        <div className="flex gap-4 flex-wrap">
-          {media.map(m => (
-            <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
-              <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
-                <Image
-                  src={m.url}
-                  alt="User media"
-                  fill
-                  className="object-cover rounded-md"
-                  priority={false}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
+// 4. MediaGallery
+function MediaGallery({ media }: { media: MediaItem[] }) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Media Gallery</h3>
+      <div className="flex gap-4 flex-wrap">
+        {media.map((m: MediaItem) => (
+          <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
+            <Image
+              src={m.url}
+              alt="User media"
+              fill
+              className="object-cover rounded-md"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
+// 5. ContactNumbers
+function ContactNumbers({
+  canView,
+  hasContactNumbers,
+  contactNumbers,
+  name
+}: {
+  canView: boolean
+  hasContactNumbers: boolean
+  contactNumbers: any[]
+  name: string
+}) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Contact Numbers</h3>
+      {hasContactNumbers ? (
+        canView ? (
+          contactNumbers.map((cn: any) => (
+            <div key={cn.id} className="border p-2 rounded mb-2">
+              <p><strong>Number:</strong> +{cn.countryCode}-{cn.number}</p>
+              <p><strong>Apps:</strong> {cn.apps.map((a: any) => a.name).join(', ')}</p>
+              <p><strong>Private:</strong> {cn.isPrivate ? 'Yes' : 'No'}</p>
             </div>
-          ))}
-        </div>
-      </div>
+          ))
+        ) : (
+          <p>{name} has added private phone numbers. Follow to unlock.</p>
+        )
+      ) : (
+        <p>No contact numbers</p>
+      )}
+    </div>
+  )
+}
 
-      {/* Contact Numbers */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Contact Numbers</h3>
-        {contactNumbers.length === 0 ? <p>No contact numbers</p> : contactNumbers.map(cn => (
-          <div key={cn.id} className="border p-2 rounded mb-2">
-            <p><strong>Number:</strong> +{cn.countryCode}-{cn.number}</p>
-            <p><strong>Apps:</strong> {cn.apps.map(a => a.name).join(', ')}</p>
-            <p><strong>Private:</strong> {cn.isPrivate ? 'Yes' : 'No'}</p>
-          </div>
-        ))}
-      </div>
+// 6. SocialMedia
+function SocialMedia({
+  canView,
+  hasSocialMediaAccounts,
+  socialMediaAccounts,
+  name
+}: {
+  canView: boolean
+  hasSocialMediaAccounts: boolean
+  socialMediaAccounts: any[]
+  name: string
+}) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Social Media Accounts</h3>
+      {hasSocialMediaAccounts ? (
+        canView ? (
+          socialMediaAccounts.map((sm: any) => (
+            <div key={sm.id} className="border p-2 rounded mb-2">
+              <p><strong>Platform:</strong> {sm.platform.name}</p>
+              <p><strong>URL:</strong> {sm.url}</p>
+              <p><strong>Private:</strong> {sm.isPrivate ? 'Yes' : 'No'}</p>
+            </div>
+          ))
+        ) : (
+          <p>{name} has private social media accounts. Follow to unlock.</p>
+        )
+      ) : (
+        <p>No social media accounts</p>
+      )}
+    </div>
+  )
+}
 
-      {/* Social Media */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Social Media Accounts</h3>
-        {socialMediaAccounts.length === 0 ? <p>No social media accounts</p> : socialMediaAccounts.map(sm => (
-          <div key={sm.id} className="border p-2 rounded mb-2">
-            <p><strong>Platform:</strong> {sm.platform.name}</p>
-            <p><strong>URL:</strong> {sm.url}</p>
-            <p><strong>Private:</strong> {sm.isPrivate ? 'Yes' : 'No'}</p>
-          </div>
-        ))}
-      </div>
+// 7. Websites
+function Websites({
+  canView,
+  hasWebsites,
+  websites,
+  name
+}: {
+  canView: boolean
+  hasWebsites: boolean
+  websites: any[]
+  name: string
+}) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Websites</h3>
+      {hasWebsites ? (
+        canView ? (
+          websites.map((w: any) => (
+            <div key={w.id} className="border p-2 rounded mb-2">
+              <p><strong>URL:</strong> {w.url}</p>
+              <p><strong>Private:</strong> {w.isPrivate ? 'Yes' : 'No'}</p>
+            </div>
+          ))
+        ) : (
+          <p>{name} has private websites. Follow to unlock.</p>
+        )
+      ) : (
+        <p>No websites</p>
+      )}
+    </div>
+  )
+}
 
-      {/* Websites */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Websites</h3>
-        {websites.length === 0 ? <p>No websites</p> : websites.map(w => (
-          <div key={w.id} className="border p-2 rounded mb-2">
-            <p><strong>URL:</strong> {w.url}</p>
-            <p><strong>Private:</strong> {w.isPrivate ? 'Yes' : 'No'}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Locations */}
+// 8. Locations
+function Locations({ locations }: { locations: LocationItem[] }) {
+  if (!locations || locations.length === 0) {
+    return (
       <div>
         <h3 className="text-xl font-semibold mb-2">Locations</h3>
-        {locations.length === 0 ? <p>No locations</p> : locations.map(loc => (
-          <div key={loc.id} className="border p-2 rounded mb-2 flex items-center justify-between">
-            <div>
-              <p><strong>Name:</strong> {loc.name}</p>
-              <p><strong>City:</strong> {loc.city.name}, {loc.city.state}, {loc.city.country}</p>
-            </div>
-            <div>{loc.isActive ? '✅' : ''}</div>
-          </div>
-        ))}
+        <p>No locations</p>
       </div>
+    )
+  }
 
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-2">Locations</h3>
+      {locations.map((loc: LocationItem) => (
+        <div key={loc.id} className="border p-2 rounded mb-2 flex items-center justify-between">
+          <div>
+            <p><strong>Name:</strong> {loc.name}</p>
+            <p><strong>City:</strong> {loc.city.name}, {loc.city.state}, {loc.city.country}</p>
+          </div>
+          <div>{loc.isActive ? '✅' : ''}</div>
+        </div>
+      ))}
     </div>
   )
 }

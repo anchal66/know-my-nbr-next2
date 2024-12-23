@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
 import { CityUserCount, searchUsers, getCityUserCounts } from '@/lib/nbrDirect'
@@ -43,9 +44,7 @@ export default function NbrDirectPage() {
     if (userDetail) {
       const activeLoc = userDetail.locations.find(loc => loc.isActive)
       if (activeLoc) {
-        // we have cityId from userDetail or we have to match with cityCounts 
-        // but your userDetail location doesn't show cityId in the snippet. 
-        // Possibly you do: cityId= activeLoc.city.id
+        // If userDetail's location includes city.id, use that
         setSelectedCityId(activeLoc.city.id)
       }
     }
@@ -67,10 +66,11 @@ export default function NbrDirectPage() {
   /** 3. Perform search each time cityId, searchName, or filters change */
   useEffect(() => {
     if (!selectedCityId) return
-    const fetchUsers = async () => {
+
+    async function fetchUsers() {
       try {
         const resp = await searchUsers({
-          cityId: selectedCityId,
+          cityId: selectedCityId!,
           name: searchName || undefined,
           genderIds,
           hairColorIds,
@@ -87,19 +87,19 @@ export default function NbrDirectPage() {
         console.error(error)
       }
     }
+
     fetchUsers()
   }, [selectedCityId, searchName, genderIds, orientationIds, hairColorIds, nationalityIds, ageMin, ageMax])
 
   /** Handle city selection */
   const handleSelectCity = (val: string) => {
-    // val is the cityId as string
     setSelectedCityId(Number(val))
   }
 
   /** On search box submit */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    // searchName is already in state, so search is triggered by useEffect
+    // searchName triggers fetch via useEffect
   }
 
   /** Handle filters from the modal */
@@ -169,8 +169,8 @@ export default function NbrDirectPage() {
             {userList.map(user => (
               <li key={user.userId} className="border p-2 rounded flex items-center space-x-4">
                 {/* Show a primary media (orderNo=1) for profile pic if available */}
-                {user.media && user.media.length > 0 ? (
-                  <div className="w-16 h-16 relative rounded">
+                <div className="w-16 h-16 relative rounded">
+                  {user.media && user.media.length > 0 ? (
                     <Image
                       src={user.media.find((m: any) => m.orderNo === 1)?.url || user.media[0].url}
                       alt={`${user.name}'s profile`}
@@ -179,12 +179,21 @@ export default function NbrDirectPage() {
                       priority={false}
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
-                  </div>
-                ) : (
-                  <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center">No Image</div>
-                )}
-                <div>
-                  <p><strong>{user.name}</strong> (@{user.username})</p>
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center">
+                      No Image
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  {/* Link to /{username} so user sees that profile */}
+                  <Link
+                    href={`/${user.username}`}
+                    className="block font-semibold hover:underline"
+                  >
+                    {user.name} (@{user.username})
+                  </Link>
                   <p>Age: {user.age}</p>
                   <p>Gender: {user.gender.name}, Orientation: {user.orientation.name}</p>
                   <p>Nationality: {user.nationality.name}</p>
