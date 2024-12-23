@@ -46,7 +46,7 @@ export default function NbrDirectPage() {
         // we have cityId from userDetail or we have to match with cityCounts 
         // but your userDetail location doesn't show cityId in the snippet. 
         // Possibly you do: cityId= activeLoc.city.id
-        setSelectedCityId(activeLoc.city.id) 
+        setSelectedCityId(activeLoc.city.id)
       }
     }
   }, [userDetail])
@@ -171,15 +171,15 @@ export default function NbrDirectPage() {
                 {/* Show a primary media (orderNo=1) for profile pic if available */}
                 {user.media && user.media.length > 0 ? (
                   <div className="w-16 h-16 relative rounded">
-                  <Image
-                    src={user.media.find((m: any) => m.orderNo === 1)?.url || user.media[0].url}
-                    alt={`${user.name}'s profile`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded"
-                    priority={false}
-                  />
-                </div>
+                    <Image
+                      src={user.media.find((m: any) => m.orderNo === 1)?.url || user.media[0].url}
+                      alt={`${user.name}'s profile`}
+                      fill
+                      className="object-cover rounded"
+                      priority={false}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
                 ) : (
                   <div className="w-16 h-16 bg-gray-300 rounded flex items-center justify-center">No Image</div>
                 )}

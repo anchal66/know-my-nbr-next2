@@ -4,9 +4,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        // If your images are stored under a specific path, specify it. Otherwise, use wildcard.
+        pathname: "/v0/b/**",
+      },
+    ],
   },
-  // You can include other Next.js configurations here if needed
 };
 
 export default nextConfig;

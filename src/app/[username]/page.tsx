@@ -56,30 +56,31 @@ export default function ProfilePage() {
       {/* Banner */}
       {bannerImage && (
         <div className="w-full h-48 overflow-hidden rounded-md relative">
-        <Image
-          src={bannerImage.url}
-          alt="Banner"
-          layout="fill"
-          objectFit="cover"
-          className="rounded-md"
-          priority={false} // Adjust priority as needed
-        />
-      </div>
+          <Image
+            src={bannerImage.url}
+            alt="Banner"
+            fill
+            className="object-cover rounded-md"
+            priority={false}
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </div>
       )}
 
       {/* Profile Image and Basic Info */}
       <div className="flex space-x-4 items-center">
         {profileImage && (
           <div className="w-24 h-24 relative rounded-full overflow-hidden">
-          <Image
-            src={profileImage.url}
-            alt="Profile"
-            layout="fill"
-            objectFit="cover"
-            className="rounded-full"
-            priority={false}
-          />
-        </div>
+            <Image
+              src={profileImage.url}
+              alt="Profile"
+              fill
+              className="object-cover rounded-full"
+              priority={false}
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+
+          </div>
         )}
         <div>
           <h2 className="text-2xl font-bold">{userProfile.name}</h2>
@@ -134,15 +135,18 @@ export default function ProfilePage() {
         <div className="flex gap-4 flex-wrap">
           {media.map(m => (
             <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
-            <Image
-              src={m.url}
-              alt="User media"
-              layout="fill"
-              objectFit="cover"
-              className="rounded-md"
-              priority={false}
-            />
-          </div>
+              <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
+                <Image
+                  src={m.url}
+                  alt="User media"
+                  fill
+                  className="object-cover rounded-md"
+                  priority={false}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+
+            </div>
           ))}
         </div>
       </div>
