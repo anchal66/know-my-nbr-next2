@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/state/store'
 import { getUserDetails, LocationItem, MediaItem } from '@/lib/user'
@@ -12,6 +12,8 @@ import {
 } from '@/lib/userProfile'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Image from 'next/image'
+import FollowModal from '../../components/FollowModal'
+import { Button } from '@/components/ui/button'
 import { OptionItem } from '@/lib/nbrDirect'
 
 type ProfileData = any 
@@ -27,8 +29,10 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const [showFollowModal, setShowFollowModal] = useState(false)
+  const [followEndDate, setFollowEndDate] = useState<string | null>(null)
+
   const isMyProfile = params.username === loggedInUsername
-  const otherUserName = params.username;
 
   useEffect(() => {
     if (!token) {
@@ -61,7 +65,6 @@ export default function ProfilePage() {
 
     setLoading(true)
     if (isMyProfile) {
-      // If we have it in Redux, no need to re-fetch
       if (currentUserState) {
         setProfileData(currentUserState)
         setLoading(false)
@@ -69,14 +72,14 @@ export default function ProfilePage() {
         fetchMyProfile()
       }
     } else {
-      if (!otherUserName) {
-        console.error('No userId in query param. Cannot fetch other user profile.')
+      if (!params.username) {
+        console.error('No username param. Cannot fetch other user profile.')
         setLoading(false)
         return
       }
-      fetchOtherProfile(otherUserName)
+      fetchOtherProfile(params.username)
     }
-  }, [token, router, dispatch, isMyProfile, currentUserState, otherUserName])
+  }, [token, router, dispatch, isMyProfile, currentUserState, params.username])
 
   if (loading) {
     return <div className="p-8">Loading profile...</div>
@@ -85,7 +88,6 @@ export default function ProfilePage() {
     return <div className="p-8">Failed to load profile.</div>
   }
 
-  // Unpack
   const {
     userProfile,
     contactNumbers,
@@ -99,29 +101,53 @@ export default function ProfilePage() {
     hasWebsites
   } = profileData
 
-  // My profile => always can see everything
+  // If it's my profile => always can see everything
   // Another user => check isFollowed
   const canViewContacts = isMyProfile || isFollowed
   const canViewSocial = isMyProfile || isFollowed
   const canViewWebsites = isMyProfile || isFollowed
 
-  // Grab banner and profile images
-  const bannerImage = media.find((m: MediaItem) => m.orderNo === 2)
-  const profileImage = media.find((m: MediaItem) => m.orderNo === 1)
+  // Example: if user has multiple locations, pick the first cityId
+  const cityId = locations && locations.length > 0 ? locations[0].city.id : 0
+
+  function handleFollowed(endDate: string) {
+    setShowFollowModal(false)
+    // Set isFollowed to true in local state. Also store the endDate so we can show it
+    setProfileData({ 
+      ...profileData, 
+      isFollowed: true 
+    })
+    setFollowEndDate(endDate)
+  }
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-8">
-      <Banner bannerImage={bannerImage} />
+      {/* Follow Button or EndDate */}
+      {!isMyProfile && (
+        <div className="flex justify-end">
+          {isFollowed ? (
+            // If we have an endDate from the follow response, show it
+            <p className="text-sm text-green-600">
+              {followEndDate
+                ? `Follow ends at: ${followEndDate}`
+                : 'You are following this user'}
+            </p>
+          ) : (
+            <Button onClick={() => setShowFollowModal(true)}>
+              Follow
+            </Button>
+          )}
+        </div>
+      )}
 
+      <Banner bannerImage={media.find((m: MediaItem) => m.orderNo === 2)} />
       <ProfileHeader
-        profileImage={profileImage}
+        profileImage={media.find((m: MediaItem) => m.orderNo === 1)}
         name={userProfile.name}
         username={userProfile.username}
         bio={userProfile.bio}
       />
-
       <BasicDetails userProfile={userProfile} />
-
       <MediaGallery media={media} />
 
       <ContactNumbers
@@ -130,22 +156,28 @@ export default function ProfilePage() {
         contactNumbers={contactNumbers}
         name={userProfile.name}
       />
-
       <SocialMedia
         canView={canViewSocial}
         hasSocialMediaAccounts={hasSocialMediaAccounts}
         socialMediaAccounts={socialMediaAccounts}
         name={userProfile.name}
       />
-
       <Websites
         canView={canViewWebsites}
         hasWebsites={hasWebsites}
         websites={websites}
         name={userProfile.name}
       />
-
       <Locations locations={locations} />
+
+      {showFollowModal && (
+        <FollowModal
+          cityId={cityId}
+          onClose={() => setShowFollowModal(false)}
+          onFollowed={handleFollowed}
+          followedUsername={userProfile.username} // pass other user's username
+        />
+      )}
     </div>
   )
 }
