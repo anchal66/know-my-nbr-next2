@@ -97,10 +97,11 @@ export default function OnboardingMediaPage() {
           <Image
             src={media.previewUrl}
             alt={`preview-${index}`}
-            layout="fill"
+            fill
             objectFit="cover"
             className="rounded"
             priority={false}
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
         ))}

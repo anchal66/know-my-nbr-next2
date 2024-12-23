@@ -1,3 +1,5 @@
+// src/state/slices
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { UserDetailResponse } from '@/lib/user'
 
