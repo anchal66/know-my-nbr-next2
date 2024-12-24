@@ -9,7 +9,7 @@ import { getUserDetails, LocationItem, MediaItem } from '@/lib/user'
 import {
   getOtherUserProfileById,
   OtherUserDetailResponse
-} from '@/lib/userProfile'
+} from '@/lib/otherUserProfile'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Image from 'next/image'
 import FollowModal from '../../components/FollowModal'
@@ -43,6 +43,7 @@ export default function ProfilePage() {
     async function fetchMyProfile() {
       try {
         const data = await getUserDetails()
+        console.log("test ", data)
         dispatch(setUserDetail(data))
         setProfileData(data)
       } catch (error) {
