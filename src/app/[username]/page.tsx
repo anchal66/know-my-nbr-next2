@@ -6,20 +6,21 @@ import { useRouter, useParams } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/state/store'
 import { getUserDetails, LocationItem, MediaItem } from '@/lib/user'
-import {
-  getOtherUserProfileById,
-  OtherUserDetailResponse
-} from '@/lib/userProfile'
+import { getOtherUserProfileById } from '@/lib/otherUserProfile'
 import { setUserDetail } from '@/state/slices/userSlice'
-import Image from 'next/image'
 import FollowModal from '../../components/FollowModal'
 import { Button } from '@/components/ui/button'
+import { getSubscriptionStatus, Subscription } from '@/lib/subscription'
+import UpgradeSubscriptionModal from '../../components/UpgardeSubscriptionModal'
+import Image from 'next/image'
 import { OptionItem } from '@/lib/nbrDirect'
 
 type ProfileData = any 
 
 export default function ProfilePage() {
-  const { token, username: loggedInUsername } = useSelector((state: RootState) => state.auth)
+  const { token, username: loggedInUsername } = useSelector(
+    (state: RootState) => state.auth
+  )
   const currentUserState = useSelector((state: RootState) => state.user.detail)
 
   const dispatch = useDispatch()
@@ -28,6 +29,8 @@ export default function ProfilePage() {
 
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   const [showFollowModal, setShowFollowModal] = useState(false)
   const [followEndDate, setFollowEndDate] = useState<string | null>(null)
@@ -35,52 +38,90 @@ export default function ProfilePage() {
   const isMyProfile = params.username === loggedInUsername
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    async function fetchMyProfile() {
-      try {
-        const data = await getUserDetails()
-        dispatch(setUserDetail(data))
-        setProfileData(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    async function fetchOtherProfile(username: string) {
-      try {
-        const data: OtherUserDetailResponse = await getOtherUserProfileById(username)
-        setProfileData(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    setLoading(true)
-    if (isMyProfile) {
-      if (currentUserState) {
-        setProfileData(currentUserState)
-        setLoading(false)
-      } else {
-        fetchMyProfile()
-      }
-    } else {
-      if (!params.username) {
-        console.error('No username param. Cannot fetch other user profile.')
-        setLoading(false)
+    async function initPage() {
+      // 1) If not logged in => redirect to /login
+      if (!token) {
+        router.push('/login')
         return
       }
-      fetchOtherProfile(params.username)
-    }
-  }, [token, router, dispatch, isMyProfile, currentUserState, params.username])
 
+      setLoading(true)
+
+      // 2) If it's my profile
+      if (isMyProfile) {
+        // a) If we already have user in Redux => use that
+        if (currentUserState) {
+          setProfileData(currentUserState)
+
+          // *** IMPORTANT FIX: fetch subscription status even if we have currentUserState
+          await fetchSubscriptionStatus()
+          setLoading(false)
+        } else {
+          // b) Otherwise fetch the user from backend
+          await fetchMyProfile()
+        }
+      } else {
+        // It's another user's profile
+        if (!params.username) {
+          console.error('No username param. Cannot fetch other user profile.')
+          setLoading(false)
+          return
+        }
+        await fetchOtherProfile(params.username)
+      }
+    }
+
+    initPage()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, isMyProfile, currentUserState, params.username])
+
+  // ------------------------------------------------------------------
+  // Fetch My Own Profile & Subscription
+  // ------------------------------------------------------------------
+  async function fetchMyProfile() {
+    try {
+      const data = await getUserDetails()
+      dispatch(setUserDetail(data))
+      setProfileData(data)
+
+      await fetchSubscriptionStatus()
+    } catch (error) {
+      console.error('Error in fetchMyProfile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Fetch Another User's Profile
+  // ------------------------------------------------------------------
+  async function fetchOtherProfile(username: string) {
+    try {
+      const data = await getOtherUserProfileById(username)
+      setProfileData(data)
+    } catch (error) {
+      console.error('Error in fetchOtherProfile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Fetch Active Subscription
+  // ------------------------------------------------------------------
+  async function fetchSubscriptionStatus() {
+    try {
+      const subscriptions = await getSubscriptionStatus()
+      const activeSubscription = subscriptions.find((sub) => sub.isActive)
+      setSubscription(activeSubscription || null)
+    } catch (error) {
+      console.error('Error fetching subscription status:', error)
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Rendering Logic
+  // ------------------------------------------------------------------
   if (loading) {
     return <div className="p-8">Loading profile...</div>
   }
@@ -101,29 +142,25 @@ export default function ProfilePage() {
     hasWebsites
   } = profileData
 
-  // If it's my profile => always can see everything
-  // Another user => check isFollowed
   const canViewContacts = isMyProfile || isFollowed
   const canViewSocial = isMyProfile || isFollowed
   const canViewWebsites = isMyProfile || isFollowed
-
-  // Example: if user has multiple locations, pick the first cityId
   const cityId = locations && locations.length > 0 ? locations[0].city.id : 0
 
   function handleFollowed(endDate: string) {
     setShowFollowModal(false)
-  
-    // 1) Mark local isFollowed as true
-    setProfileData((prev: ProfileData) => {
+
+    // 1) Locally mark isFollowed as true
+    setProfileData((prev: any) => {
       if (!prev) return prev
       return { ...prev, isFollowed: true }
     })
     setFollowEndDate(endDate)
-  
-    // 2) Re-fetch the user profile
+
+    // 2) Re-fetch other user’s profile
     reFetchProfile(userProfile.username)
   }
-  
+
   async function reFetchProfile(name: string) {
     try {
       const data = await getOtherUserProfileById(name)
@@ -135,20 +172,32 @@ export default function ProfilePage() {
 
   return (
     <div className="p-8 max-w-2xl mx-auto space-y-8">
-      {/* Follow Button or EndDate */}
+      {/* Subscription Section (only for my profile) */}
+      {isMyProfile && (
+        <div className="flex justify-end">
+          {subscription ? (
+            <p className="text-sm text-green-600">
+              You are subscribed to: <strong>{subscription.type}</strong>
+            </p>
+          ) : (
+            <Button onClick={() => setShowUpgradeModal(true)}>
+              Upgrade Profile
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Follow Button or EndDate (only for other user profiles) */}
       {!isMyProfile && (
         <div className="flex justify-end">
           {isFollowed ? (
-            // If we have an endDate from the follow response, show it
             <p className="text-sm text-green-600">
               {followEndDate
                 ? `Follow ends at: ${followEndDate}`
                 : 'You are following this user'}
             </p>
           ) : (
-            <Button onClick={() => setShowFollowModal(true)}>
-              Follow
-            </Button>
+            <Button onClick={() => setShowFollowModal(true)}>Follow</Button>
           )}
         </div>
       )}
@@ -183,12 +232,22 @@ export default function ProfilePage() {
       />
       <Locations locations={locations} />
 
+      {/* Follow Modal */}
       {showFollowModal && (
         <FollowModal
           cityId={cityId}
           onClose={() => setShowFollowModal(false)}
           onFollowed={handleFollowed}
-          followedUsername={userProfile.username} // pass other user's username
+          followedUsername={userProfile.username}
+        />
+      )}
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <UpgradeSubscriptionModal
+          cityId={cityId}
+          onClose={() => setShowUpgradeModal(false)}
+          onSubscribed={(sub) => setSubscription(sub)}
         />
       )}
     </div>

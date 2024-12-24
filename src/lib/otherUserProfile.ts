@@ -1,4 +1,4 @@
-// src/lib/userProfile.ts
+// src/lib/otherUserProfile.ts
 import api from './api'
 import {
   UserProfile,
