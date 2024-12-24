@@ -23,78 +23,51 @@ export default function OnboardingLocationPage() {
   const { token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
   const dispatch = useDispatch()
-  let locationChanged = false;
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
   })
 
+  /** 
+   * We keep track of lat/lng/placeId in state.
+   * The user can override them by picking a suggestion. 
+   */
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
   const [placeId, setPlaceId] = useState<string>('')
-  const [refreshToken, setRefreshToken] = useState<string>('')
-  const [address, setAddress] = useState<string>('') // current displayed address
 
+  /** Refresh token from the server (if your backend gives a new token each time). */
+  const [refreshToken, setRefreshToken] = useState<string>('')
+
+  /** Address for display. */
+  const [address, setAddress] = useState<string>('')
+
+  /** For location search. */
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   useEffect(() => {
+    // If not logged in => redirect (optional, depends on your flow)
     // if (!token) {
     //   router.push('/login')
     //   return
     // }
-    // if (onBoardingStatus === 'FINISHED') {
-    //   router.push('/')
-    //   return
-    // }
-    // // If user did not finish previous steps, redirect accordingly
-    // if (onBoardingStatus === 'EMPTY') {
-    //   router.push('/onboarding/profile')
-    //   return
-    // }
-    // if (onBoardingStatus === 'PROFILE') {
-    //   router.push('/onboarding/private-data')
-    //   return
-    // }
-    // if (onBoardingStatus === 'PRIVATE_CONTACT') {
-    //   // We are now at step 3 done, should be at step 4 next.
-    //   // If not done step 3 properly, redirect:
-    //   router.push('/onboarding/media')
-    //   return
-    // }
-    // Now presumably user is at step 4 or after media step (MEDIA_UPLOADED).
 
-    // Get current location
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const currentLat = position.coords.latitude
-      const currentLng = position.coords.longitude
-      setLat(currentLat)
-      setLng(currentLng)
-
-      // First call: save current location
-      try {
-        if (!locationChanged) {
-          const data = await saveUserLocation({
-            latitude: currentLat.toString(),
-            longitude: currentLng.toString(),
-            name: '',
-            city: '',
-            isActive: true
-          })
-          // Response includes placeId, name, city, and refreshToken
-          if (data.placeId) setPlaceId(data.placeId)
-          if (data.name) setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
-          if (data.refreshToken) setRefreshToken(data.refreshToken)
-        }
-      } catch (error) {
-        console.error(error)
-        // If save fails, handle error or show user a message
+    // Grab geolocation but do NOT call saveUserLocation automatically
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLat(position.coords.latitude)
+        setLng(position.coords.longitude)
+        // We'll only finalize location on "Let's Begin"
+      },
+      (error) => {
+        console.error('Geolocation error:', error)
       }
-    })
+    )
   }, [token, router])
 
-  // Handle search suggestions
+  /** Whenever user types in search box, fetch suggestions. */
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (searchTerm.length > 2) {
@@ -108,51 +81,74 @@ export default function OnboardingLocationPage() {
     fetchSuggestions()
   }, [searchTerm])
 
+  /**
+   * When the user clicks a suggestion:
+   * 1) Call saveUserLocation with that placeId => server returns lat/lng, address, refreshToken
+   * 2) Update local states so the map & address show the new location
+   */
   const handleSuggestionClick = async (suggestion: Suggestion) => {
-    // Call Step 4 API again with placeId and refreshToken to update location
     try {
       const data = await saveUserLocation({
         placeId: suggestion.placeId,
         isActive: true,
-        refreshToken: refreshToken // Use the previously obtained refreshToken
+        refreshToken, // if needed
       })
-      setPlaceId(data.placeId)
+      // Update local states
+      setPlaceId(data.placeId || '')
       setLat(data.latitude)
       setLng(data.longitude)
-      setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
-      setShowSuggestions(false)
-      setSearchTerm('')
-      locationChanged = true;
+      setAddress(
+        data.name + (data.city?.name ? `, ${data.city.name}` : '')
+      )
       if (data.refreshToken) setRefreshToken(data.refreshToken)
+
+      setSearchTerm('')
+      setShowSuggestions(false)
+      // Now user location is "partially saved," but we'll finalize on "Let's Begin"
     } catch (err) {
       console.error(err)
     }
   }
 
+  /**
+   * Final step: user clicks "Let's Begin".
+   * We call saveUserLocation AGAIN with whichever final placeId or lat/lng is in state,
+   * then set the token, fetch user detail, and redirect to home.
+   */
   const handleLetsBegin = async () => {
-    // Finalize location. If user didn't pick a new location, we already have placeId or lat/lng.
-    // Call saveUserLocation again with the current placeId or lat/lng and refreshToken
     try {
-      const data = await saveUserLocation({
-        placeId: placeId || '',
+      const finalData = await saveUserLocation({
+        placeId,
         latitude: lat ? lat.toString() : '',
         longitude: lng ? lng.toString() : '',
         isActive: true,
+        refreshToken, 
       })
-      const token = data.refreshToken;
-      // On success, user onboarding should be FINISHED, redirect to home
-      // Immediately fetch user detail
-      setToken(token)
-      const decoded = decodeToken(token)
+      // finalData might contain a final refreshToken from the server
+      const finalToken = finalData.refreshToken
+      if (!finalToken) {
+        alert('No token returned. Could not finalize.')
+        return
+      }
+      // Put that token in cookies
+      setToken(finalToken)
+
+      // Decode & set credentials in Redux
+      const decoded = decodeToken(finalToken)
       if (decoded) {
-        dispatch(setCredentials({
-          token,
-          username: decoded.username,
-          role: decoded.role,
-          onBoardingStatus: decoded.onBoardingStatus
-        }));
+        dispatch(
+          setCredentials({
+            token: finalToken,
+            username: decoded.username,
+            role: decoded.role,
+            onBoardingStatus: decoded.onBoardingStatus,
+          })
+        )
+        // Also fetch user details
         const userData = await getUserDetails()
         dispatch(setUserDetail(userData))
+
+        // On success, user onboarding FINISHED => go to home
         router.push('/')
       }
     } catch (error) {
@@ -161,21 +157,30 @@ export default function OnboardingLocationPage() {
     }
   }
 
-  if (!isLoaded || lat === null || lng === null) {
-    return <div>Loading map...</div>
+  if (!isLoaded) {
+    return <div>Loading map script...</div>
+  }
+  if (lat === null || lng === null) {
+    return <div>Fetching your current location...</div>
   }
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
       <h1 className="text-2xl mb-4">Onboarding - Location</h1>
-      <p>We have detected your current location. If you want to change it, use the search box below.</p>
+      <p>
+        We have detected your location. If you want to change it, use the
+        search box below.
+      </p>
 
+      {/* SEARCH INPUT */}
       <div className="relative">
         <Input
           placeholder="Search for a location..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
+          onFocus={() => {
+            if (suggestions.length > 0) setShowSuggestions(true)
+          }}
         />
         {showSuggestions && suggestions.length > 0 && (
           <div className="absolute z-10 top-full left-0 w-full bg-white border shadow-md max-h-60 overflow-auto">
@@ -192,15 +197,19 @@ export default function OnboardingLocationPage() {
         )}
       </div>
 
-      <p><strong>Current Address:</strong> {address || 'Not available'}</p>
+      <p>
+        <strong>Current Address:</strong>{' '}
+        {address || 'No custom address chosen'}
+      </p>
 
+      {/* MAP */}
       <div className="w-full h-64">
         <GoogleMap
-          center={{ lat: lat, lng: lng }}
+          center={{ lat, lng }}
           zoom={14}
           mapContainerStyle={{ width: '100%', height: '100%' }}
         >
-          <Marker position={{ lat: lat, lng: lng }} />
+          <Marker position={{ lat, lng }} />
         </GoogleMap>
       </div>
 
