@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { RootState, AppDispatch } from '@/state/store'
 import { fetchWalletBalance } from '@/state/slices/walletSlice'
 import { HeaderAddFundsModal } from '../HeaderAddFundsModal'
+import { logout } from '@/state/slices/authSlice'
 import {
   Select,
   SelectTrigger,
@@ -16,6 +17,7 @@ import {
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Image from 'next/image'
+import { removeToken } from '@/lib/cookies'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -28,6 +30,12 @@ export function Header() {
 
   const isLoggedIn = !!token && username
 
+  const handleLogout = () => {
+    removeToken()
+    dispatch(logout())
+    window.location.href = '/login'
+  }
+
   // Fetch wallet if logged in
   useEffect(() => {
     if (isLoggedIn) {
@@ -38,7 +46,7 @@ export function Header() {
 
   const setUserDetails = async () => {
     const userData = await getUserDetails()
-            dispatch(setUserDetail(userData));
+    dispatch(setUserDetail(userData));
   }
 
   // City logic
@@ -64,15 +72,15 @@ export function Header() {
         {/* Left side: Logo + hamburger */}
         <div className="flex items-center space-x-4">
           <div className="font-bold text-xl">
-          <Link href="/">
-            <Image 
-              src="/logo.png" 
-              alt="Logo" 
-              width={80} 
-              height={40} 
-              priority 
-            />
-          </Link>
+            <Link href="/">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={80}
+                height={40}
+                priority
+              />
+            </Link>
           </div>
 
           {/* Hamburger (show on mobile only) */}
@@ -101,7 +109,7 @@ export function Header() {
               <div className="flex items-center space-x-2">
                 <span className="font-semibold">{activeCityName}</span>
                 {otherCities.length > 0 && (
-                  <Select onValueChange={() => {}} disabled>
+                  <Select onValueChange={() => { }} disabled>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Other Cities" />
                     </SelectTrigger>
@@ -136,6 +144,11 @@ export function Header() {
                   </svg>
                 </button>
               </div>
+              <button
+                className="rounded border p-3 hover:bg-red-500"
+                onClick={handleLogout}>
+                Logout
+              </button>
             </>
           ) : (
             <div className="text-gray-500 italic">Not Logged In</div>
