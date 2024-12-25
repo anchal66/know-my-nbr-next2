@@ -2,7 +2,7 @@
 
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
@@ -11,11 +11,10 @@ import { Button } from '@/components/ui/button'
 import {
   getConversations,
   getMessages,
+  sendMessageREST, // We'll define this in conversations.ts
   Conversation,
   Message,
 } from '@/lib/conversations'
-import { initStompClient, sendStompMessage } from '@/lib/stompClient'
-import { Client, IMessage } from '@stomp/stompjs'
 
 export default function MessagesPage() {
   // 1) Auth check
@@ -33,35 +32,12 @@ export default function MessagesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 20
 
-  // 3) STOMP client reference
-  const stompClientRef = useRef<Client | null>(null)
-
-  // ----------------------------------------------------------------
-  // 4) On mount, check login, init STOMP, fetch convos
-  // ----------------------------------------------------------------
   useEffect(() => {
     if (!token) {
       router.push('/login')
       return
     }
-    const initStomp = () => {
-      const client = initStompClient({
-        token,
-        onConnected: () => console.log('[STOMP] Connected'),
-        onDisconnected: () => console.log('[STOMP] Disconnected'),
-        onError: (err) => console.error('[STOMP] Error:', err),
-      })
-      stompClientRef.current = client
-    }  
-    initStomp()  // set up STOMP only once
     fetchAllConversations()
-
-    // Cleanup: deactivate STOMP on unmount
-    return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate()
-      }
-    }
   }, [token, router])
 
   async function fetchAllConversations() {
@@ -77,45 +53,7 @@ export default function MessagesPage() {
   }
 
   // ----------------------------------------------------------------
-  // 5) STOMP init & subscription logic
-  // ----------------------------------------------------------------
-  function initStomp() {
-    // Pass token for "Authorization: Bearer <token>"
-    const client = initStompClient({
-      token,
-      onConnected: () => console.log('[STOMP] Connected'),
-      onDisconnected: () => console.log('[STOMP] Disconnected'),
-      onError: (err) => console.error('[STOMP] Error:', err),
-    })
-    stompClientRef.current = client
-  }
-
-  // Whenever selectedMatchId changes, re-subscribe to that conversation
-  useEffect(() => {
-    if (!selectedMatchId || !stompClientRef.current) return
-
-    // Subscribe to /topic/conversations/{matchId}
-    const sub = stompClientRef.current.subscribe(
-      `/topic/conversations/${selectedMatchId}`,
-      (msg: IMessage) => {
-        try {
-          const newMessage = JSON.parse(msg.body) as Message
-          // Append new messages from the server
-          setMessages((prev) => [...prev, newMessage])
-        } catch (err) {
-          console.error('Failed to parse incoming STOMP message:', err)
-        }
-      }
-    )
-
-    return () => {
-      // Unsubscribe on conversation change
-      sub.unsubscribe()
-    }
-  }, [selectedMatchId])
-
-  // ----------------------------------------------------------------
-  // 6) Selecting a conversation & fetching messages
+  // Select Conversation & load messages
   // ----------------------------------------------------------------
   async function handleSelectConversation(matchId: string) {
     setSelectedMatchId(matchId)
@@ -139,6 +77,24 @@ export default function MessagesPage() {
     }
   }
 
+  // ----------------------------------------------------------------
+  // 5-second polling: once a conversation is selected, reload messages
+  // ----------------------------------------------------------------
+  useEffect(() => {
+    if (!selectedMatchId) return
+    const interval = setInterval(() => {
+      // re-fetch page 1 (or last page used). For simplicity, we'll always fetch page=1
+      fetchMessages(selectedMatchId, 1)
+    }, 5000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [selectedMatchId])
+
+  // ----------------------------------------------------------------
+  // Loading older messages
+  // ----------------------------------------------------------------
   function handleLoadOlder() {
     if (!selectedMatchId) return
     const nextPage = currentPage + 1
@@ -147,22 +103,26 @@ export default function MessagesPage() {
   }
 
   // ----------------------------------------------------------------
-  // 7) Sending messages with STOMP
+  // Sending messages via REST
   // ----------------------------------------------------------------
-  function handleSendMessage() {
+  async function handleSendMessage() {
     if (!selectedMatchId || !messageContent.trim()) return
-    if (!stompClientRef.current) return
-
-    // This calls the helper in `stompClient.ts`:
-    sendStompMessage(stompClientRef.current, selectedMatchId, messageContent)
-
-    // Optionally do an optimistic update. The server will also push back the final message.
-    // ...
-    setMessageContent('')
+    try {
+      setLoading(true)
+      // Send new message (REST)
+      const newMsg = await sendMessageREST(selectedMatchId, messageContent)
+      // Append to chat
+      setMessages((prev) => [...prev, newMsg])
+      setMessageContent('')
+    } catch (err) {
+      console.error('Error sending message:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   // ----------------------------------------------------------------
-  // 8) Render the page with Tailwind styling
+  // Render the page
   // ----------------------------------------------------------------
   if (!token) {
     return <p className="p-4">Redirecting to login...</p>
@@ -191,7 +151,9 @@ export default function MessagesPage() {
               >
                 <p className="font-semibold">{conv.name}</p>
                 {lastMsg ? (
-                  <p className="text-xs text-gray-600 truncate">{lastMsg.content}</p>
+                  <p className="text-xs text-gray-600 truncate">
+                    {lastMsg.content}
+                  </p>
                 ) : (
                   <span className="text-xs text-blue-500">New</span>
                 )}
@@ -210,7 +172,12 @@ export default function MessagesPage() {
         ) : (
           <>
             <div className="flex items-center justify-between mb-2">
-              <Button variant="outline" size="sm" onClick={handleLoadOlder} disabled={loading}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLoadOlder}
+                disabled={loading}
+              >
                 Load Older
               </Button>
               {loading && <p className="text-sm text-gray-500">Loading...</p>}
@@ -219,11 +186,13 @@ export default function MessagesPage() {
             <div className="flex-1 overflow-y-auto mb-2 border-t pt-2 space-y-2">
               {messages.map((msg) => {
                 // Adjust to check if it's your user
-                const isMine = false
+                const isMine = false // or (msg.fromUserId === yourUserId)
                 return (
                   <div
                     key={msg.id}
-                    className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${
+                      isMine ? 'justify-end' : 'justify-start'
+                    }`}
                   >
                     <p
                       className={`inline-block px-3 py-2 rounded-md max-w-xs break-words ${

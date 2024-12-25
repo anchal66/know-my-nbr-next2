@@ -1,4 +1,5 @@
 // src/lib/conversations.ts
+
 import api from '@/lib/api'
 
 export interface Conversation {
@@ -18,13 +19,13 @@ export interface Message {
   createdAt: string
 }
 
-// REST: get all conversation threads
+/** 1) Get all conversation threads */
 export async function getConversations(): Promise<Conversation[]> {
   const { data } = await api.get('/api/v1/conversations')
   return data
 }
 
-// REST: get messages for one conversation (pagination)
+/** 2) Get messages for a specific conversation (with pagination) */
 export async function getMessages(
   matchId: string,
   page = 1,
@@ -36,8 +37,10 @@ export async function getMessages(
   return data
 }
 
-// Optional fallback: if you want to send messages via REST
-export async function sendMessage(matchId: string, content: string): Promise<Message> {
-  const { data } = await api.post(`/api/v1/conversations/${matchId}/messages`, { content })
+/** 3) Send new message via REST (POST) */
+export async function sendMessageREST(matchId: string, content: string): Promise<Message> {
+  const { data } = await api.post(`/api/v1/conversations/${matchId}/messages`, {
+    content,
+  })
   return data
 }
