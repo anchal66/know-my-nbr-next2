@@ -2,10 +2,12 @@
 // src/components/SwipeFilterModal.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import * as Slider from '@radix-ui/react-slider'
 import { SwipeFilters } from '@/lib/filters'
 import { OptionItem } from '@/lib/swipeService'
 import { Button } from '@/components/ui/button'
+import clsx from 'clsx'
 
 interface SwipeFilterModalProps {
   onClose: () => void
@@ -22,122 +24,156 @@ export default function FilterModal({
   orientations,
   onSave,
 }: SwipeFilterModalProps) {
-  const [distancePreference, setDistancePreference] = useState<number>(initialFilters.distancePreference)
-  const [ageMin, setAgeMin] = useState<number>(initialFilters.ageMin)
-  const [ageMax, setAgeMax] = useState<number>(initialFilters.ageMax)
-  const [genderIds, setGenderIds] = useState<number[]>(initialFilters.genderIds)
-  const [orientationIds, setOrientationIds] = useState<number[]>(initialFilters.orientationIds)
+  let [distancePreference, setDistancePreference] = useState<number>(
+    initialFilters.distancePreference
+  )
+  const [ageRange, setAgeRange] = useState<[number, number]>([
+    initialFilters.ageMin,
+    initialFilters.ageMax,
+  ])
+  const [selectedGenders, setSelectedGenders] = useState<number[]>(
+    initialFilters.genderIds
+  )
+  const [selectedOris, setSelectedOris] = useState<number[]>(
+    initialFilters.orientationIds
+  )
 
-  function toggleSelection(id: number, list: number[], setList: (arr: number[]) => void) {
-    if (list.includes(id)) {
-      setList(list.filter((val) => val !== id))
-    } else {
-      setList([...list, id])
-    }
+  /** For multi-select. We'll store the array of selected IDs. */
+  function handleGenderChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const opts = Array.from(e.target.selectedOptions).map((opt) =>
+      Number(opt.value)
+    )
+    setSelectedGenders(opts)
+  }
+
+  function handleOrientationChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const opts = Array.from(e.target.selectedOptions).map((opt) =>
+      Number(opt.value)
+    )
+    setSelectedOris(opts)
   }
 
   function handleSave() {
+    let [ageMin, ageMax] = ageRange
     // Basic checks
-    if (distancePreference < 1) setDistancePreference(1)
-    if (distancePreference > 100) setDistancePreference(100)
-    if (ageMin < 18) setAgeMin(18)
-    if (ageMin > 80) setAgeMin(80)
-    if (ageMax < 18) setAgeMax(18)
-    if (ageMax > 80) setAgeMax(80)
+    if (distancePreference < 1) distancePreference = 1
+    if (distancePreference > 100) distancePreference = 100
+    if (ageMin < 18) ageMin = 18
+    if (ageMin > 80) ageMin = 80
+    if (ageMax < 18) ageMax = 18
+    if (ageMax > 80) ageMax = 80
 
     onSave({
       distancePreference,
       ageMin,
       ageMax,
-      genderIds,
-      orientationIds,
+      genderIds: selectedGenders,
+      orientationIds: selectedOris,
     })
     onClose()
   }
 
+  // If user manually toggles age slider, update local state
+  const handleAgeSliderChange = (val: number[]) => {
+    if (val.length === 2) {
+      setAgeRange([val[0], val[1]])
+    }
+  }
+
+  // If user manually toggles distance slider, update local state
+  const handleDistanceSliderChange = (val: number[]) => {
+    if (val.length === 1) {
+      setDistancePreference(val[0])
+    }
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-4">
-        <h2 className="text-xl font-semibold mb-2">Filters</h2>
-        
-        {/* Distance */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-6">
+        <h2 className="text-2xl font-bold mb-2 text-center">Filters</h2>
+
+        {/* Distance Slider */}
         <div>
-          <label className="block font-medium mb-1">Distance (1-100 km)</label>
-          <input
-            type="number"
+          <label className="block font-medium mb-1 text-sm">
+            Distance: {distancePreference} km
+          </label>
+          <Slider.Root
+            className="relative flex items-center select-none touch-none w-full h-5"
+            value={[distancePreference]}
+            onValueChange={handleDistanceSliderChange}
             min={1}
             max={100}
-            value={distancePreference}
-            onChange={(e) => setDistancePreference(Number(e.target.value))}
-            className="w-full border p-2 rounded"
-          />
+            step={1}
+          >
+            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
+            <Slider.Thumb
+              className={clsx(
+                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
+              )}
+            />
+          </Slider.Root>
         </div>
 
-        {/* Age Range */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="block font-medium mb-1">Min Age (18-80)</label>
-            <input
-              type="number"
-              min={18}
-              max={80}
-              value={ageMin}
-              onChange={(e) => setAgeMin(Number(e.target.value))}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block font-medium mb-1">Max Age (18-80)</label>
-            <input
-              type="number"
-              min={18}
-              max={80}
-              value={ageMax}
-              onChange={(e) => setAgeMax(Number(e.target.value))}
-              className="w-full border p-2 rounded"
-            />
-          </div>
-        </div>
-
-        {/* Genders */}
+        {/* Age Range Slider */}
         <div>
-          <label className="block font-medium mb-1">Genders</label>
-          <div className="flex flex-wrap gap-2">
+          <label className="block font-medium mb-1 text-sm">
+            Age Range: {ageRange[0]} - {ageRange[1]}
+          </label>
+          <Slider.Root
+            className="relative flex items-center select-none touch-none w-full h-5"
+            value={ageRange}
+            onValueChange={handleAgeSliderChange}
+            min={18}
+            max={80}
+            step={1}
+          >
+            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
+            <Slider.Thumb
+              className="block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <Slider.Thumb
+              className="block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </Slider.Root>
+        </div>
+
+        {/* Genders (multi-select) */}
+        <div>
+          <label className="block font-medium mb-1 text-sm">Genders</label>
+          <select
+            multiple
+            className="border w-full p-2 rounded h-28"
+            value={selectedGenders.map(String)} // string array
+            onChange={handleGenderChange}
+          >
             {genders.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                className={`px-3 py-1 border rounded ${
-                  genderIds.includes(g.id) ? 'bg-blue-200' : 'bg-gray-100'
-                }`}
-                onClick={() => toggleSelection(g.id, genderIds, setGenderIds)}
-              >
+              <option key={g.id} value={g.id}>
                 {g.name}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
-        {/* Orientations */}
+        {/* Orientations (multi-select) */}
         <div>
-          <label className="block font-medium mb-1">Orientations</label>
-          <div className="flex flex-wrap gap-2">
+          <label className="block font-medium mb-1 text-sm">Orientations</label>
+          <select
+            multiple
+            className="border w-full p-2 rounded h-28"
+            value={selectedOris.map(String)}
+            onChange={handleOrientationChange}
+          >
             {orientations.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                className={`px-3 py-1 border rounded ${
-                  orientationIds.includes(o.id) ? 'bg-blue-200' : 'bg-gray-100'
-                }`}
-                onClick={() => toggleSelection(o.id, orientationIds, setOrientationIds)}
-              >
+              <option key={o.id} value={o.id}>
                 {o.name}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <div className="flex justify-end space-x-2 mt-4">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -148,3 +184,4 @@ export default function FilterModal({
     </div>
   )
 }
+
