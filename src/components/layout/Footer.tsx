@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
     return (
-      <footer className="w-full border-t bg-white py-2 px-4 text-center text-sm text-gray-600">
+      <footer className="w-full border-t bg-background text-foreground dark:bg-background dark:text-foreground py-2 px-4 text-center text-sm text-gray-600">
         <nav className="flex justify-center space-x-4">
         <Link href="/privacy">Privacy Policy</Link>
         <Link href="/terms">Terms &amp; Conditions</Link>
