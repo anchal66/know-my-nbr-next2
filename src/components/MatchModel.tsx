@@ -19,11 +19,11 @@ export default function MatchModal({ matchId, onClose }: MatchModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-sm rounded shadow-lg p-6 flex flex-col space-y-4">
-        <h2 className="text-2xl font-bold text-center text-green-600">
+      <div className="bg-neutral-900 w-full max-w-sm rounded shadow-lg p-6 flex flex-col space-y-4 text-white">
+        <h2 className="text-2xl font-bold text-center text-brand-gold">
           Congratulations!
         </h2>
-        <p className="text-center">It's a match!</p>
+        <p className="text-center">It’s a match!</p>
         <div className="flex justify-center space-x-4 mt-4">
           <Button variant="secondary" onClick={onClose}>
             Close
@@ -34,5 +34,5 @@ export default function MatchModal({ matchId, onClose }: MatchModalProps) {
         </div>
       </div>
     </div>
-  )
+  )  
 }

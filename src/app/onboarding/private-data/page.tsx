@@ -153,118 +153,177 @@ export default function OnboardingPrivateDataPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl mb-4">Onboarding - Private Data</h1>
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <h1 className="text-2xl text-brand-gold">Onboarding - Private Data</h1>
 
-      <h2 className="text-xl mb-2">Contact Numbers</h2>
-      {contactNumbers.map((contact, index) => (
-        <div key={index} className="mb-4 border p-4 rounded space-y-2">
-          <Input
-            placeholder="Phone Number"
-            value={contact.number}
-            onChange={(e) => updateContactNumberField(index, 'number', e.target.value)}
-          />
-          <Input
-            placeholder="Country Code"
-            value={contact.countryCode}
-            onChange={(e) => updateContactNumberField(index, 'countryCode', e.target.value)}
-          />
-
-          <div className="space-y-2">
-            <p>Messaging Apps (Select any):</p>
-            {messagingApps.map((app) => (
-              <div key={app.id} className="flex items-center space-x-2">
-                <Checkbox
-                  checked={contact.appIds.includes(app.id)}
-                  onCheckedChange={(checked) => {
-                    let newAppIds = contact.appIds
-                    if (checked) {
-                      newAppIds = [...newAppIds, app.id]
-                    } else {
-                      newAppIds = newAppIds.filter(aId => aId !== app.id)
-                    }
-                    updateContactNumberField(index, 'appIds', newAppIds)
-                  }}
-                />
-                <label>{app.name}</label>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={contact.isPrivate}
-              onCheckedChange={(checked) => updateContactNumberField(index, 'isPrivate', !!checked)}
+        <h2 className="text-xl text-brand-gold">Contact Numbers</h2>
+        {contactNumbers.map((contact, index) => (
+          <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-2">
+            <Input
+              placeholder="Phone Number"
+              value={contact.number}
+              onChange={(e) => updateContactNumberField(index, 'number', e.target.value)}
+              className="bg-neutral-800 border border-gray-700 text-gray-200"
             />
-            <label>Private</label>
-          </div>
-
-          {index > 0 && (
-            <Button variant="destructive" onClick={() => removeContactNumber(index)}>Remove Contact</Button>
-          )}
-        </div>
-      ))}
-      <Button variant="secondary" className="mb-4" onClick={addContactNumber}>Add Another Contact</Button>
-
-      <h2 className="text-xl mb-2">Websites</h2>
-      {websites.map((website, index) => (
-        <div key={index} className="mb-4 border p-4 rounded space-y-2">
-          <Input
-            placeholder="Website URL"
-            value={website.url}
-            onChange={(e) => updateWebsiteField(index, 'url', e.target.value)}
-          />
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={website.isPrivate}
-              onCheckedChange={(checked) => updateWebsiteField(index, 'isPrivate', !!checked)}
+            <Input
+              placeholder="Country Code"
+              value={contact.countryCode}
+              onChange={(e) => updateContactNumberField(index, 'countryCode', e.target.value)}
+              className="bg-neutral-800 border border-gray-700 text-gray-200"
             />
-            <label>Private</label>
-          </div>
 
-          {index > 0 && (
-            <Button variant="destructive" onClick={() => removeWebsite(index)}>Remove Website</Button>
-          )}
-        </div>
-      ))}
-      <Button variant="secondary" className="mb-4" onClick={addWebsite}>Add Another Website</Button>
-
-      <h2 className="text-xl mb-2">Social Media Accounts</h2>
-      {socialMediaAccounts.map((account, index) => (
-        <div key={index} className="mb-4 border p-4 rounded space-y-2">
-          <Select onValueChange={(val) => updateSocialMediaField(index, 'platformId', Number(val))}>
-            <SelectTrigger className="mb-2">
-              <SelectValue placeholder="Select Social Media Platform" />
-            </SelectTrigger>
-            <SelectContent>
-              {socialMediaPlatforms.map((platform) => (
-                <SelectItem key={platform.id} value={platform.id.toString()}>{platform.name}</SelectItem>
+            <div className="space-y-2">
+              <p className="text-gray-300">Messaging Apps (Select any):</p>
+              {messagingApps.map((app) => (
+                <div key={app.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={contact.appIds.includes(app.id)}
+                    onCheckedChange={(checked) => {
+                      let newAppIds = contact.appIds
+                      if (checked) {
+                        newAppIds = [...newAppIds, app.id]
+                      } else {
+                        newAppIds = newAppIds.filter(aId => aId !== app.id)
+                      }
+                      updateContactNumberField(index, 'appIds', newAppIds)
+                    }}
+                    className="accent-brand-gold"
+                  />
+                  <label>{app.name}</label>
+                </div>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
 
-          <Input
-            placeholder="Profile URL"
-            value={account.url}
-            onChange={(e) => updateSocialMediaField(index, 'url', e.target.value)}
-          />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={contact.isPrivate}
+                onCheckedChange={(checked) => 
+                  updateContactNumberField(index, 'isPrivate', !!checked)
+                }
+                className="accent-brand-gold"
+              />
+              <label>Private</label>
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              checked={account.isPrivate}
-              onCheckedChange={(checked) => updateSocialMediaField(index, 'isPrivate', !!checked)}
-            />
-            <label>Private</label>
+            {index > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => removeContactNumber(index)}
+              >
+                Remove Contact
+              </Button>
+            )}
           </div>
+        ))}
+        <Button
+          variant="secondary"
+          className="mb-4 border-gray-700 text-gray-200 hover:bg-neutral-700"
+          onClick={addContactNumber}
+        >
+          Add Another Contact
+        </Button>
 
-          {index > 0 && (
-            <Button variant="destructive" onClick={() => removeSocialMedia(index)}>Remove Social Media</Button>
-          )}
-        </div>
-      ))}
-      <Button variant="secondary" className="mb-4" onClick={addSocialMedia}>Add Another Social Media</Button>
+        <h2 className="text-xl text-brand-gold">Websites</h2>
+        {websites.map((website, index) => (
+          <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-2">
+            <Input
+              placeholder="Website URL"
+              value={website.url}
+              onChange={(e) => updateWebsiteField(index, 'url', e.target.value)}
+              className="bg-neutral-800 border border-gray-700 text-gray-200"
+            />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={website.isPrivate}
+                onCheckedChange={(checked) => 
+                  updateWebsiteField(index, 'isPrivate', !!checked)
+                }
+                className="accent-brand-gold"
+              />
+              <label>Private</label>
+            </div>
 
-      <Button onClick={handleSubmit}>Submit</Button>
+            {index > 0 && (
+              <Button variant="destructive" onClick={() => removeWebsite(index)}>
+                Remove Website
+              </Button>
+            )}
+          </div>
+        ))}
+        <Button
+          variant="secondary"
+          className="mb-4 border-gray-700 text-gray-200 hover:bg-neutral-700"
+          onClick={addWebsite}
+        >
+          Add Another Website
+        </Button>
+
+        <h2 className="text-xl text-brand-gold">Social Media Accounts</h2>
+        {socialMediaAccounts.map((account, index) => (
+          <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-2">
+            <Select 
+              onValueChange={(val) => updateSocialMediaField(index, 'platformId', Number(val))}
+            >
+              <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+                <SelectValue placeholder="Select Social Media Platform" />
+              </SelectTrigger>
+              <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+                {socialMediaPlatforms.map((platform) => (
+                  <SelectItem
+                    key={platform.id}
+                    value={platform.id.toString()}
+                    className="hover:bg-neutral-700"
+                  >
+                    {platform.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Input
+              placeholder="Profile URL"
+              value={account.url}
+              onChange={(e) => updateSocialMediaField(index, 'url', e.target.value)}
+              className="bg-neutral-800 border border-gray-700 text-gray-200"
+            />
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={account.isPrivate}
+                onCheckedChange={(checked) => 
+                  updateSocialMediaField(index, 'isPrivate', !!checked)
+                }
+                className="accent-brand-gold"
+              />
+              <label>Private</label>
+            </div>
+
+            {index > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => removeSocialMedia(index)}
+              >
+                Remove Social Media
+              </Button>
+            )}
+          </div>
+        ))}
+        <Button
+          variant="secondary"
+          className="mb-4 border-gray-700 text-gray-200 hover:bg-neutral-700"
+          onClick={addSocialMedia}
+        >
+          Add Another Social Media
+        </Button>
+
+        <Button
+          className="bg-brand-gold text-black hover:brightness-110"
+          onClick={handleSubmit}
+        >
+          Submit
+        </Button>
+      </div>
     </div>
   )
 }

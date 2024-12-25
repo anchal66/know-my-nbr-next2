@@ -156,137 +156,145 @@ export default function MessagesPage() {
   const conversationList = conversationPage?.content || []
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-[80vh] p-4 gap-4">
-      {/* Left: Conversation List */}
-      <div className="w-full md:w-1/3 border border-gray-300 rounded-lg p-4 flex flex-col">
-        <h2 className="text-xl font-bold mb-2">Messages</h2>
-        {loading && conversationList.length === 0 && (
-          <p className="text-sm text-gray-500">Loading conversations...</p>
-        )}
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="flex flex-col md:flex-row w-full h-[80vh] gap-4">
+        {/* Left: Conversation List */}
+        <div className="w-full md:w-1/3 border border-gray-700 rounded-lg p-4 flex flex-col bg-neutral-800">
+          <h2 className="text-xl font-bold text-brand-gold mb-2">Messages</h2>
+          {loading && conversationList.length === 0 && (
+            <p className="text-sm text-gray-400">Loading conversations...</p>
+          )}
 
-        <div className="flex-1 overflow-y-auto space-y-2">
-          {conversationList.map((conv: any) => {
-            const isActive = selectedMatchId === conv.matchId
-            const lastMsg = conv.recentMessages?.[0]
-            return (
-              <div
-                key={conv.matchId}
-                onClick={() => handleSelectConversation(conv.matchId)}
-                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                  isActive ? 'bg-blue-100' : 'hover:bg-gray-50'
-                }`}
-              >
-                <p className="font-semibold">{conv.name}</p>
-                {lastMsg ? (
-                  <p className="text-xs text-gray-600 truncate">
-                    {lastMsg.content}
+          <div className="flex-1 overflow-y-auto space-y-2">
+            {conversationList.map((conv: any) => {
+              const isActive = selectedMatchId === conv.matchId
+              const lastMsg = conv.recentMessages?.[0]
+              return (
+                <div
+                  key={conv.matchId}
+                  onClick={() => handleSelectConversation(conv.matchId)}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                    isActive ? 'bg-brand-gold text-black' : 'hover:bg-neutral-700'
+                  }`}
+                >
+                  <p className="font-semibold">
+                    {conv.name}
                   </p>
-                ) : (
-                  <span className="text-xs text-blue-500">New</span>
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Example: pagination controls for conversations (if you want them) */}
-        <div className="mt-2 flex justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={loading || (conversationPage?.first ?? true)}
-            onClick={() => {
-              if (!conversationPage) return
-              const prevPage = conversationPage.number - 1
-              if (prevPage >= 0) {
-                fetchAllConversations(prevPage)
-              }
-            }}
-          >
-            Prev
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={loading || (conversationPage?.last ?? true)}
-            onClick={() => {
-              if (!conversationPage) return
-              const nextPage = conversationPage.number + 1
-              if (!conversationPage.last) {
-                fetchAllConversations(nextPage)
-              }
-            }}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      {/* Right: Chat messages */}
-      <div className="w-full md:flex-1 border border-gray-300 rounded-lg p-4 flex flex-col">
-        {!selectedMatchId ? (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
-            Select a conversation
+                  {lastMsg ? (
+                    <p className="text-xs text-gray-300 truncate">
+                      {lastMsg.content}
+                    </p>
+                  ) : (
+                    <span className="text-xs text-brand-gold">New</span>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLoadOlder}
-                disabled={loading || messagesPage?.last}
-              >
-                Load Older
-              </Button>
-              {loading && <p className="text-sm text-gray-500">Loading...</p>}
-            </div>
 
-            <div className="flex-1 overflow-y-auto mb-2 border-t pt-2 space-y-2">
-              {messages.map((msg) => {
-                // Adjust to check if it's your user
-                const isMine = false // or (msg.fromUserId === yourUserId)
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${
-                      isMine ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <p
-                      className={`inline-block px-3 py-2 rounded-md max-w-xs break-words ${
-                        isMine
-                          ? 'bg-blue-100 text-blue-900'
-                          : 'bg-gray-100 text-gray-900'
+          {/* Example: pagination controls */}
+          <div className="mt-2 flex justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-gray-300"
+              disabled={loading || (conversationPage?.first ?? true)}
+              onClick={() => {
+                if (!conversationPage) return
+                const prevPage = conversationPage.number - 1
+                if (prevPage >= 0) {
+                  fetchAllConversations(prevPage)
+                }
+              }}
+            >
+              Prev
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-gray-300"
+              disabled={loading || (conversationPage?.last ?? true)}
+              onClick={() => {
+                if (!conversationPage) return
+                const nextPage = conversationPage.number + 1
+                if (!conversationPage.last) {
+                  fetchAllConversations(nextPage)
+                }
+              }}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+
+        {/* Right: Chat messages */}
+        <div className="w-full md:flex-1 border border-gray-700 rounded-lg p-4 flex flex-col bg-neutral-800">
+          {!selectedMatchId ? (
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+              Select a conversation
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-600 text-gray-300"
+                  onClick={handleLoadOlder}
+                  disabled={loading || messagesPage?.last}
+                >
+                  Load Older
+                </Button>
+                {loading && <p className="text-sm text-gray-400">Loading...</p>}
+              </div>
+
+              <div className="flex-1 overflow-y-auto mb-2 border-t border-gray-700 pt-2 space-y-2">
+                {messages.map((msg) => {
+                  // Adjust to check if it's your user
+                  const isMine = false // or (msg.fromUserId === yourUserId)
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex ${
+                        isMine ? 'justify-end' : 'justify-start'
                       }`}
                     >
-                      {msg.content}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
+                      <p
+                        className={`inline-block px-3 py-2 rounded-md max-w-xs break-words ${
+                          isMine
+                            ? 'bg-brand-gold text-black'
+                            : 'bg-neutral-700 text-gray-100'
+                        }`}
+                      >
+                        {msg.content}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
 
-            {/* Send box */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                className="flex-1 border border-gray-300 rounded-md px-3 py-2"
-                placeholder="Type a message..."
-                value={messageContent}
-                onChange={(e) => setMessageContent(e.target.value)}
-                disabled={loading}
-              />
-              <Button
-                variant="default"
-                disabled={loading || !messageContent.trim()}
-                onClick={handleSendMessage}
-              >
-                Send
-              </Button>
-            </div>
-          </>
-        )}
+              {/* Send box */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="flex-1 border border-gray-600 bg-neutral-700 rounded-md px-3 py-2 text-white"
+                  placeholder="Type a message..."
+                  value={messageContent}
+                  onChange={(e) => setMessageContent(e.target.value)}
+                  disabled={loading}
+                />
+                <Button
+                  variant="default"
+                  className="bg-brand-gold text-black hover:brightness-110"
+                  disabled={loading || !messageContent.trim()}
+                  onClick={handleSendMessage}
+                >
+                  Send
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -65,11 +65,12 @@ export default function FollowModal({
 
   return (
     <ModalContainer>
-      <div className="p-4 space-y-4">
-        {error && <p className="text-red-500">{error}</p>}
+      <div className="bg-neutral-900 rounded p-4 space-y-4 text-white">
+        {error && <p className="text-brand-red">{error}</p>}
         {price !== null && (
           <p>
-            Follow user <strong>{followedUsername}</strong> for <strong>{price}</strong> coins?
+            Follow user <strong>{followedUsername}</strong> for{" "}
+            <strong>{price}</strong> coins?
           </p>
         )}
         <div className="flex justify-end space-x-2">
@@ -82,7 +83,7 @@ export default function FollowModal({
         </div>
       </div>
     </ModalContainer>
-  )
+  )  
 }
 
 function ModalContainer({ children }: { children: React.ReactNode }) {

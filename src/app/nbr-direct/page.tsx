@@ -151,131 +151,140 @@ export default function NbrDirectPage() {
 
   // Render
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-4">
-      <h1 className="text-2xl font-semibold">NBR Direct</h1>
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="max-w-3xl mx-auto space-y-4">
+        <h1 className="text-2xl font-semibold text-brand-gold">NBR Direct</h1>
 
-      {/* City + Gender on page, not in modal */}
-      <div className="space-y-4">
-        {/* City search */}
-        <div className="relative">
-          <label className="block font-medium mb-1 text-sm">
-            Type your city
-          </label>
-          <Input
-            placeholder="Type at least 2 chars..."
-            value={citySearchTerm}
-            onChange={(e) => setCitySearchTerm(e.target.value)}
-          />
-          {citySuggestions.length > 0 && (
-            <div className="absolute z-10 top-full left-0 w-full bg-white border shadow-md max-h-48 overflow-auto">
-              {citySuggestions.map((c) => (
-                <div
-                  key={c.cityId}
-                  className="p-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handlePickCity(c.cityId, c.label)}
-                >
-                  {c.label}
-                </div>
-              ))}
+        {/* City + Gender on page */}
+        <div className="space-y-4">
+          {/* City search */}
+          <div className="relative">
+            <label className="block font-medium mb-1 text-sm text-gray-300">
+              Type your city
+            </label>
+            <Input
+              placeholder="Type at least 2 chars..."
+              value={citySearchTerm}
+              onChange={(e) => setCitySearchTerm(e.target.value)}
+              className="bg-neutral-800 border border-gray-700 text-gray-200"
+            />
+            {citySuggestions.length > 0 && (
+              <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-48 overflow-auto">
+                {citySuggestions.map((c) => (
+                  <div
+                    key={c.cityId}
+                    className="p-2 hover:bg-neutral-700 cursor-pointer"
+                    onClick={() => handlePickCity(c.cityId, c.label)}
+                  >
+                    {c.label}
+                  </div>
+                ))}
+              </div>
+            )}
+            {selectedCityId && (
+              <p className="text-green-400 text-sm mt-1">
+                Selected City: {selectedCityName}
+              </p>
+            )}
+          </div>
+
+          {/* Gender dropdown */}
+          <div>
+            <label className="block font-medium mb-1 text-sm text-gray-300">
+              Gender
+            </label>
+            <div className="inline-block">
+              <select
+                className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
+                value={selectedGenderId ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setSelectedGenderId(val ? Number(val) : null)
+                }}
+              >
+                <option value="">Any</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-          {selectedCityId && (
-            <p className="text-green-600 text-sm mt-1">
-              Selected City: {selectedCityName}
-            </p>
-          )}
-        </div>
-
-        {/* Gender dropdown */}
-        <div>
-          <label className="block font-medium mb-1 text-sm">Gender</label>
-          <div className="inline-block">
-            <select
-              className="border rounded px-3 py-2"
-              value={selectedGenderId ?? ''}
-              onChange={(e) => {
-                const val = e.target.value
-                setSelectedGenderId(val ? Number(val) : null)
-              }}
-            >
-              <option value="">Any</option>
-              {genders.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
-      </div>
 
-      {/* Filter button for rest filters */}
-      <Button variant="secondary" onClick={() => setShowFilterModal(true)}>
-        Advanced Filters
-      </Button>
+        {/* Filter button */}
+        <Button
+          variant="secondary"
+          className="border-gray-700 text-gray-200 hover:bg-neutral-700"
+          onClick={() => setShowFilterModal(true)}
+        >
+          Advanced Filters
+        </Button>
 
-      {/* Display results */}
-      <div className="mt-4">
-        {loading ? (
-          <p>Loading results...</p>
-        ) : (
-          <p>Total results: {totalUsers}</p>
+        {/* Display results */}
+        <div className="mt-4">
+          {loading ? (
+            <p className="text-gray-400">Loading results...</p>
+          ) : (
+            <p className="text-gray-300">Total results: {totalUsers}</p>
+          )}
+
+          {!loading && userList.length === 0 ? (
+            <p className="text-gray-400">No users found</p>
+          ) : (
+            <ul className="space-y-2 mt-2">
+              {userList.map((user) => (
+                <li
+                  key={user.userId}
+                  className="border border-gray-700 p-2 rounded flex items-center space-x-4 bg-neutral-800"
+                >
+                  <div className="w-16 h-16 relative rounded overflow-hidden">
+                    {user.media && user.media.length > 0 ? (
+                      <Image
+                        src={
+                          user.media.find((m: any) => m.orderNo === 1)?.url ||
+                          user.media[0].url
+                        }
+                        alt={`${user.name}'s profile`}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-neutral-700 flex items-center justify-center text-gray-300">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 text-gray-200">
+                    <Link
+                      href={`/${user.username}`}
+                      className="font-semibold text-brand-gold hover:underline"
+                    >
+                      {user.name} (@{user.username})
+                    </Link>
+                    <p>Age: {user.age}</p>
+                    <p>
+                      Gender: {user.gender.name} | Orientation:{' '}
+                      {user.orientation.name}
+                    </p>
+                    <p>Nationality: {user.nationality.name}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Filter Modal */}
+        {showFilterModal && (
+          <FilterModal
+            onClose={() => setShowFilterModal(false)}
+            onApply={handleApplyFilters}
+            initialFilters={modalFilters}
+          />
         )}
-
-        {!loading && userList.length === 0 ? (
-          <p>No users found</p>
-        ) : (
-          <ul className="space-y-2 mt-2">
-            {userList.map((user) => (
-              <li
-                key={user.userId}
-                className="border p-2 rounded flex items-center space-x-4"
-              >
-                <div className="w-16 h-16 relative rounded overflow-hidden">
-                  {user.media && user.media.length > 0 ? (
-                    <Image
-                      src={
-                        user.media.find((m: any) => m.orderNo === 1)?.url ||
-                        user.media[0].url
-                      }
-                      alt={`${user.name}'s profile`}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-300 flex items-center justify-center text-gray-600">
-                      No Image
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <Link
-                    href={`/${user.username}`}
-                    className="font-semibold hover:underline"
-                  >
-                    {user.name} (@{user.username})
-                  </Link>
-                  <p>Age: {user.age}</p>
-                  <p>
-                    Gender: {user.gender.name} | Orientation:{' '}
-                    {user.orientation.name}
-                  </p>
-                  <p>Nationality: {user.nationality.name}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
-
-      {/* Filter Modal */}
-      {showFilterModal && (
-        <FilterModal
-          onClose={() => setShowFilterModal(false)}
-          onApply={handleApplyFilters}
-          initialFilters={modalFilters}
-        />
-      )}
     </div>
   )
 }

@@ -107,13 +107,14 @@ export default function FilterModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-2xl p-6 rounded shadow-md relative space-y-6">
+      {/* Outer overlay is semi-transparent black */}
+      <div className="bg-neutral-900 w-full max-w-2xl p-6 rounded shadow-md relative space-y-6 text-white">
         <button className="absolute top-3 right-3" onClick={onClose}>
           X
         </button>
-        <h2 className="text-2xl font-bold text-center">Advanced Filters</h2>
-
-        {/* Name filter (if you want name here) */}
+        <h2 className="text-2xl font-bold text-center text-brand-gold">Advanced Filters</h2>
+  
+        {/* Name filter */}
         <div>
           <label className="block font-medium text-sm mb-1">Name</label>
           <Input
@@ -122,7 +123,7 @@ export default function FilterModal({
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-
+  
         {/* Age range slider */}
         <div>
           <label className="block font-medium text-sm mb-1">
@@ -136,21 +137,13 @@ export default function FilterModal({
             max={80}
             step={1}
           >
-            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
-            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
-            <Slider.Thumb
-              className={clsx(
-                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
-              )}
-            />
-            <Slider.Thumb
-              className={clsx(
-                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
-              )}
-            />
+            <Slider.Track className="bg-gray-700 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-brand-gold rounded-full" />
+            <Slider.Thumb className="block w-5 h-5 bg-brand-gold rounded-full focus:outline-none focus:ring-2 focus:ring-brand-gold" />
+            <Slider.Thumb className="block w-5 h-5 bg-brand-gold rounded-full focus:outline-none focus:ring-2 focus:ring-brand-gold" />
           </Slider.Root>
         </div>
-
+  
         {/* Orientations */}
         <div>
           <p className="font-medium text-sm mb-1">Orientation</p>
@@ -168,13 +161,14 @@ export default function FilterModal({
                       e.target.checked
                     )
                   }
+                  className="accent-brand-gold"
                 />
                 <span>{o.name}</span>
               </label>
             ))}
           </div>
         </div>
-
+  
         {/* Hair Colors */}
         <div>
           <p className="font-medium text-sm mb-1">Hair Color</p>
@@ -192,13 +186,14 @@ export default function FilterModal({
                       e.target.checked
                     )
                   }
+                  className="accent-brand-gold"
                 />
                 <span>{h.name}</span>
               </label>
             ))}
           </div>
         </div>
-
+  
         {/* Nationalities */}
         <div>
           <p className="font-medium text-sm mb-1">Nationality</p>
@@ -216,13 +211,14 @@ export default function FilterModal({
                       e.target.checked
                     )
                   }
+                  className="accent-brand-gold"
                 />
                 <span>{n.name}</span>
               </label>
             ))}
           </div>
         </div>
-
+  
         <div className="flex justify-end space-x-2 pt-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -231,5 +227,5 @@ export default function FilterModal({
         </div>
       </div>
     </div>
-  )
+  )  
 }

@@ -89,9 +89,9 @@ export default function FilterModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md space-y-6">
-        <h2 className="text-2xl font-bold mb-2 text-center">Filters</h2>
-
+      <div className="bg-neutral-900 p-6 rounded-lg shadow-lg w-full max-w-md space-y-6 text-white">
+        <h2 className="text-2xl font-bold mb-2 text-center text-brand-gold">Filters</h2>
+  
         {/* Distance Slider */}
         <div>
           <label className="block font-medium mb-1 text-sm">
@@ -105,16 +105,12 @@ export default function FilterModal({
             max={100}
             step={1}
           >
-            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
-            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
-            <Slider.Thumb
-              className={clsx(
-                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
-              )}
-            />
+            <Slider.Track className="bg-gray-700 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-brand-gold rounded-full" />
+            <Slider.Thumb className="block w-5 h-5 bg-brand-gold rounded-full focus:outline-none focus:ring-2 focus:ring-brand-gold" />
           </Slider.Root>
         </div>
-
+  
         {/* Age Range Slider */}
         <div>
           <label className="block font-medium mb-1 text-sm">
@@ -128,24 +124,20 @@ export default function FilterModal({
             max={80}
             step={1}
           >
-            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
-            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
-            <Slider.Thumb
-              className="block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <Slider.Thumb
-              className="block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+            <Slider.Track className="bg-gray-700 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-brand-gold rounded-full" />
+            <Slider.Thumb className="block w-5 h-5 bg-brand-gold rounded-full focus:outline-none focus:ring-2 focus:ring-brand-gold" />
+            <Slider.Thumb className="block w-5 h-5 bg-brand-gold rounded-full focus:outline-none focus:ring-2 focus:ring-brand-gold" />
           </Slider.Root>
         </div>
-
-        {/* Genders (multi-select) */}
+  
+        {/* Genders */}
         <div>
           <label className="block font-medium mb-1 text-sm">Genders</label>
           <select
             multiple
-            className="border w-full p-2 rounded h-28"
-            value={selectedGenders.map(String)} // string array
+            className="border border-gray-700 bg-neutral-800 w-full p-2 rounded h-28 text-white"
+            value={selectedGenders.map(String)}
             onChange={handleGenderChange}
           >
             {genders.map((g) => (
@@ -155,13 +147,13 @@ export default function FilterModal({
             ))}
           </select>
         </div>
-
-        {/* Orientations (multi-select) */}
+  
+        {/* Orientations */}
         <div>
           <label className="block font-medium mb-1 text-sm">Orientations</label>
           <select
             multiple
-            className="border w-full p-2 rounded h-28"
+            className="border border-gray-700 bg-neutral-800 w-full p-2 rounded h-28 text-white"
             value={selectedOris.map(String)}
             onChange={handleOrientationChange}
           >
@@ -172,7 +164,7 @@ export default function FilterModal({
             ))}
           </select>
         </div>
-
+  
         {/* Buttons */}
         <div className="flex justify-end space-x-2 mt-4">
           <Button variant="secondary" onClick={onClose}>
@@ -182,6 +174,6 @@ export default function FilterModal({
         </div>
       </div>
     </div>
-  )
+  )  
 }
 
