@@ -115,109 +115,152 @@ export default function OnboardingProfilePage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl mb-4">Onboarding - Public Profile</h1>
-      <Input 
-        placeholder="Name" 
-        value={name} 
-        onChange={(e) => setName(e.target.value)} 
-        className="mb-2" 
-      />
-      <Input 
-        placeholder="Bio" 
-        value={bio} 
-        onChange={(e) => setBio(e.target.value)} 
-        className="mb-2" 
-      />
-      <Input 
-        type="date" 
-        placeholder="Date of Birth" 
-        value={dateOfBirth} 
-        onChange={(e) => setDateOfBirth(e.target.value)} 
-        className="mb-2" 
-      />
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl text-brand-gold mb-4">Onboarding - Public Profile</h1>
+        <Input
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200"
+        />
+        <Input
+          placeholder="Bio"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200"
+        />
+        <Input
+          type="date"
+          placeholder="Date of Birth"
+          value={dateOfBirth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
+          className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200"
+        />
 
-      {/* Gender */}
-      <Select onValueChange={(val) => setGenderId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Gender" />
-        </SelectTrigger>
-        <SelectContent>
-          {genders.map((g) => (
-            <SelectItem key={g.id} value={g.id.toString()}>{g.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Gender */}
+        <Select onValueChange={(val) => setGenderId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Gender" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {genders.map((g) => (
+              <SelectItem
+                key={g.id}
+                value={g.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {g.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Orientation */}
-      <Select onValueChange={(val) => setOrientationId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Orientation" />
-        </SelectTrigger>
-        <SelectContent>
-          {orientations.map((o) => (
-            <SelectItem key={o.id} value={o.id.toString()}>{o.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Orientation */}
+        <Select onValueChange={(val) => setOrientationId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Orientation" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {orientations.map((o) => (
+              <SelectItem
+                key={o.id}
+                value={o.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {o.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Ethnicity */}
-      <Select onValueChange={(val) => setEthnicityId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Ethnicity" />
-        </SelectTrigger>
-        <SelectContent>
-          {ethnicities.map((e) => (
-            <SelectItem key={e.id} value={e.id.toString()}>{e.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Ethnicity */}
+        <Select onValueChange={(val) => setEthnicityId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Ethnicity" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {ethnicities.map((e) => (
+              <SelectItem
+                key={e.id}
+                value={e.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {e.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Input 
-        type="number" 
-        placeholder="Height (cm)" 
-        value={heightCm ?? ''} 
-        onChange={(e) => setHeightCm(Number(e.target.value))} 
-        className="mb-2" 
-      />
+        <Input
+          type="number"
+          placeholder="Height (cm)"
+          value={heightCm ?? ''}
+          onChange={(e) => setHeightCm(Number(e.target.value))}
+          className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200"
+        />
 
-      {/* Hair Color */}
-      <Select onValueChange={(val) => setHairColorId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Hair Color" />
-        </SelectTrigger>
-        <SelectContent>
-          {hairColors.map((h) => (
-            <SelectItem key={h.id} value={h.id.toString()}>{h.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Hair Color */}
+        <Select onValueChange={(val) => setHairColorId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Hair Color" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {hairColors.map((h) => (
+              <SelectItem
+                key={h.id}
+                value={h.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {h.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Nationality */}
-      <Select onValueChange={(val) => setNationalityId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Nationality" />
-        </SelectTrigger>
-        <SelectContent>
-          {nationalities.map((n) => (
-            <SelectItem key={n.id} value={n.id.toString()}>{n.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Nationality */}
+        <Select onValueChange={(val) => setNationalityId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Nationality" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {nationalities.map((n) => (
+              <SelectItem
+                key={n.id}
+                value={n.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {n.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Languages */}
-      <Select onValueChange={(val) => setLanguageId(Number(val))}>
-        <SelectTrigger className="mb-2">
-          <SelectValue placeholder="Select Language" />
-        </SelectTrigger>
-        <SelectContent>
-          {languages.map((l) => (
-            <SelectItem key={l.id} value={l.id.toString()}>{l.name}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Languages */}
+        <Select onValueChange={(val) => setLanguageId(Number(val))}>
+          <SelectTrigger className="mb-2 bg-neutral-800 border border-gray-700 text-gray-200">
+            <SelectValue placeholder="Select Language" />
+          </SelectTrigger>
+          <SelectContent className="bg-neutral-800 border border-gray-700 text-gray-200">
+            {languages.map((l) => (
+              <SelectItem
+                key={l.id}
+                value={l.id.toString()}
+                className="hover:bg-neutral-700"
+              >
+                {l.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Button onClick={handleSubmit}>Submit</Button>
+        <Button
+          className="bg-brand-gold text-black hover:brightness-110"
+          onClick={handleSubmit}
+        >
+          Submit
+        </Button>
+      </div>
     </div>
   )
 }

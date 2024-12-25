@@ -79,37 +79,45 @@ export default function OnboardingMediaPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl mb-4">Onboarding - Upload Your Media</h1>
-      <p className="mb-4">Please upload at least 2 images. You can upload multiple images and preview them here.</p>
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-2xl text-brand-gold mb-4">Onboarding - Upload Your Media</h1>
+        <p className="mb-4 text-gray-300">
+          Please upload at least 2 images. You can upload multiple images and preview them here.
+        </p>
 
-      <Input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleFileChange}
-        className="mb-4"
-      />
+        <Input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="mb-4 bg-neutral-800 border border-gray-700 text-gray-200"
+        />
 
-      <div className="flex flex-wrap gap-4 mb-4">
-        {selectedFiles.map((media, index) => (
-          <div key={index} className="w-24 h-24 relative rounded overflow-hidden">
-          <Image
-            src={media.previewUrl}
-            alt={`preview-${index}`}
-            fill
-            objectFit="cover"
-            className="rounded"
-            priority={false}
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
+        <div className="flex flex-wrap gap-4 mb-4">
+          {selectedFiles.map((media, index) => (
+            <div
+              key={index}
+              className="w-24 h-24 relative rounded overflow-hidden"
+            >
+              <Image
+                src={media.previewUrl}
+                alt={`preview-${index}`}
+                fill
+                className="object-cover rounded"
+              />
+            </div>
+          ))}
         </div>
-        ))}
-      </div>
 
-      <Button onClick={handleUpload} disabled={isUploading}>
-        {isUploading ? 'Uploading...' : 'Submit Images'}
-      </Button>
+        <Button
+          onClick={handleUpload}
+          disabled={isUploading}
+          className="bg-brand-gold text-black hover:brightness-110"
+        >
+          {isUploading ? 'Uploading...' : 'Submit Images'}
+        </Button>
+      </div>
     </div>
   )
 }

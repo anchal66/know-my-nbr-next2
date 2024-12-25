@@ -171,16 +171,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="p-8 max-w-2xl mx-auto space-y-8">
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-8 max-w-2xl mx-auto space-y-8">
       {/* Subscription Section (only for my profile) */}
       {isMyProfile && (
         <div className="flex justify-end">
           {subscription ? (
-            <p className="text-sm text-green-600">
+            <p className="text-sm text-green-400">
               You are subscribed to: <strong>{subscription.type}</strong>
             </p>
           ) : (
-            <Button onClick={() => setShowUpgradeModal(true)}>
+            <Button className="bg-brand-gold text-black hover:brightness-110" 
+                    onClick={() => setShowUpgradeModal(true)}>
               Upgrade Profile
             </Button>
           )}
@@ -191,13 +192,16 @@ export default function ProfilePage() {
       {!isMyProfile && (
         <div className="flex justify-end">
           {isFollowed ? (
-            <p className="text-sm text-green-600">
+            <p className="text-sm text-green-400">
               {followEndDate
                 ? `Follow ends at: ${followEndDate}`
                 : 'You are following this user'}
             </p>
           ) : (
-            <Button onClick={() => setShowFollowModal(true)}>Follow</Button>
+            <Button className="bg-brand-gold text-black hover:brightness-110"
+                    onClick={() => setShowFollowModal(true)}>
+              Follow
+            </Button>
           )}
         </div>
       )}
@@ -296,8 +300,8 @@ function ProfileHeader({
         </div>
       )}
       <div>
-        <h2 className="text-2xl font-bold">{name}</h2>
-        <p className="text-sm text-gray-600">@{username}</p>
+        <h2 className="text-2xl font-bold text-brand-gold">{name}</h2>
+        <p className="text-sm text-gray-400">@{username}</p>
       </div>
     </div>
   )
@@ -305,46 +309,47 @@ function ProfileHeader({
 
 // 3. BasicDetails
 function BasicDetails({ userProfile }: { userProfile: any }) {
-  // you could define a more specific type for userProfile
   return (
     <>
       <div>
-        <h3 className="text-xl font-semibold">Bio</h3>
-        <p>{userProfile.bio}</p>
+        <h3 className="text-xl font-semibold text-brand-gold">Bio</h3>
+        <p className="text-gray-200">{userProfile.bio}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <h4 className="font-semibold">Date of Birth</h4>
-          <p>{userProfile.dateOfBirth}</p>
+          <h4 className="font-semibold text-brand-gold">Date of Birth</h4>
+          <p className="text-gray-200">{userProfile.dateOfBirth}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Gender</h4>
-          <p>{userProfile.gender.name}</p>
+          <h4 className="font-semibold text-brand-gold">Gender</h4>
+          <p className="text-gray-200">{userProfile.gender.name}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Orientation</h4>
-          <p>{userProfile.orientation.name}</p>
+          <h4 className="font-semibold text-brand-gold">Orientation</h4>
+          <p className="text-gray-200">{userProfile.orientation.name}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Ethnicity</h4>
-          <p>{userProfile.ethnicity.name}</p>
+          <h4 className="font-semibold text-brand-gold">Ethnicity</h4>
+          <p className="text-gray-200">{userProfile.ethnicity.name}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Height (cm)</h4>
-          <p>{userProfile.heightCm}</p>
+          <h4 className="font-semibold text-brand-gold">Height (cm)</h4>
+          <p className="text-gray-200">{userProfile.heightCm}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Hair Color</h4>
-          <p>{userProfile.hairColor.name}</p>
+          <h4 className="font-semibold text-brand-gold">Hair Color</h4>
+          <p className="text-gray-200">{userProfile.hairColor.name}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Nationality</h4>
-          <p>{userProfile.nationality.name}</p>
+          <h4 className="font-semibold text-brand-gold">Nationality</h4>
+          <p className="text-gray-200">{userProfile.nationality.name}</p>
         </div>
         <div>
-          <h4 className="font-semibold">Languages</h4>
-          {userProfile.languages.map((l: OptionItem) => l.name).join(', ')}
+          <h4 className="font-semibold text-brand-gold">Languages</h4>
+          <p className="text-gray-200">
+            {userProfile.languages.map((l: OptionItem) => l.name).join(', ')}
+          </p>
         </div>
       </div>
     </>
@@ -355,7 +360,7 @@ function BasicDetails({ userProfile }: { userProfile: any }) {
 function MediaGallery({ media }: { media: MediaItem[] }) {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-2">Media Gallery</h3>
+      <h3 className="text-xl font-semibold text-brand-gold mb-2">Media Gallery</h3>
       <div className="flex gap-4 flex-wrap">
         {media.map((m: MediaItem) => (
           <div key={m.id} className="w-32 h-32 overflow-hidden rounded-md relative">
@@ -386,21 +391,29 @@ function ContactNumbers({
 }) {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-2">Contact Numbers</h3>
+      <h3 className="text-xl font-semibold text-brand-gold mb-2">Contact Numbers</h3>
       {hasContactNumbers ? (
         canView ? (
           contactNumbers.map((cn: any) => (
-            <div key={cn.id} className="border p-2 rounded mb-2">
-              <p><strong>Number:</strong> +{cn.countryCode}-{cn.number}</p>
-              <p><strong>Apps:</strong> {cn.apps.map((a: any) => a.name).join(', ')}</p>
-              <p><strong>Private:</strong> {cn.isPrivate ? 'Yes' : 'No'}</p>
+            <div key={cn.id} className="border border-gray-700 p-2 rounded mb-2">
+              <p className="text-gray-200">
+                <strong>Number:</strong> +{cn.countryCode}-{cn.number}
+              </p>
+              <p className="text-gray-200">
+                <strong>Apps:</strong> {cn.apps.map((a: any) => a.name).join(', ')}
+              </p>
+              <p className="text-gray-200">
+                <strong>Private:</strong> {cn.isPrivate ? 'Yes' : 'No'}
+              </p>
             </div>
           ))
         ) : (
-          <p>{name} has added private phone numbers. Follow to unlock.</p>
+          <p className="text-gray-400">
+            {name} has added private phone numbers. Follow to unlock.
+          </p>
         )
       ) : (
-        <p>No contact numbers</p>
+        <p className="text-gray-400">No contact numbers</p>
       )}
     </div>
   )
@@ -420,21 +433,34 @@ function SocialMedia({
 }) {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-2">Social Media Accounts</h3>
+      <h3 className="text-xl font-semibold text-brand-gold mb-2">
+        Social Media Accounts
+      </h3>
       {hasSocialMediaAccounts ? (
         canView ? (
           socialMediaAccounts.map((sm: any) => (
-            <div key={sm.id} className="border p-2 rounded mb-2">
-              <p><strong>Platform:</strong> {sm.platform.name}</p>
-              <p><strong>URL:</strong> {sm.url}</p>
-              <p><strong>Private:</strong> {sm.isPrivate ? 'Yes' : 'No'}</p>
+            <div
+              key={sm.id}
+              className="border border-gray-700 p-2 rounded mb-2"
+            >
+              <p className="text-gray-200">
+                <strong>Platform:</strong> {sm.platform.name}
+              </p>
+              <p className="text-gray-200">
+                <strong>URL:</strong> {sm.url}
+              </p>
+              <p className="text-gray-200">
+                <strong>Private:</strong> {sm.isPrivate ? 'Yes' : 'No'}
+              </p>
             </div>
           ))
         ) : (
-          <p>{name} has private social media accounts. Follow to unlock.</p>
+          <p className="text-gray-400">
+            {name} has private social media accounts. Follow to unlock.
+          </p>
         )
       ) : (
-        <p>No social media accounts</p>
+        <p className="text-gray-400">No social media accounts</p>
       )}
     </div>
   )
@@ -454,20 +480,29 @@ function Websites({
 }) {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-2">Websites</h3>
+      <h3 className="text-xl font-semibold text-brand-gold mb-2">Websites</h3>
       {hasWebsites ? (
         canView ? (
           websites.map((w: any) => (
-            <div key={w.id} className="border p-2 rounded mb-2">
-              <p><strong>URL:</strong> {w.url}</p>
-              <p><strong>Private:</strong> {w.isPrivate ? 'Yes' : 'No'}</p>
+            <div
+              key={w.id}
+              className="border border-gray-700 p-2 rounded mb-2"
+            >
+              <p className="text-gray-200">
+                <strong>URL:</strong> {w.url}
+              </p>
+              <p className="text-gray-200">
+                <strong>Private:</strong> {w.isPrivate ? 'Yes' : 'No'}
+              </p>
             </div>
           ))
         ) : (
-          <p>{name} has private websites. Follow to unlock.</p>
+          <p className="text-gray-400">
+            {name} has private websites. Follow to unlock.
+          </p>
         )
       ) : (
-        <p>No websites</p>
+        <p className="text-gray-400">No websites</p>
       )}
     </div>
   )
@@ -478,20 +513,28 @@ function Locations({ locations }: { locations: LocationItem[] }) {
   if (!locations || locations.length === 0) {
     return (
       <div>
-        <h3 className="text-xl font-semibold mb-2">Locations</h3>
-        <p>No locations</p>
+        <h3 className="text-xl font-semibold text-brand-gold mb-2">Locations</h3>
+        <p className="text-gray-400">No locations</p>
       </div>
     )
   }
 
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-2">Locations</h3>
+      <h3 className="text-xl font-semibold text-brand-gold mb-2">Locations</h3>
       {locations.map((loc: LocationItem) => (
-        <div key={loc.id} className="border p-2 rounded mb-2 flex items-center justify-between">
-          <div>
-            <p><strong>Name:</strong> {loc.name}</p>
-            <p><strong>City:</strong> {loc.city.name}, {loc.city.state}, {loc.city.country}</p>
+        <div
+          key={loc.id}
+          className="border border-gray-700 p-2 rounded mb-2 flex items-center justify-between"
+        >
+          <div className="text-gray-200">
+            <p>
+              <strong>Name:</strong> {loc.name}
+            </p>
+            <p>
+              <strong>City:</strong> {loc.city.name}, {loc.city.state},{' '}
+              {loc.city.country}
+            </p>
           </div>
           <div>{loc.isActive ? '✅' : ''}</div>
         </div>

@@ -49,18 +49,18 @@ export default function UpgradeSubscriptionModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-md p-6 space-y-4">
-        <h3 className="text-lg font-bold">Upgrade Profile</h3>
-
-        {error && <p className="text-red-500">{error}</p>}
-
+      <div className="bg-neutral-900 rounded shadow-md p-6 space-y-4 text-white">
+        <h3 className="text-lg font-bold text-brand-gold">Upgrade Profile</h3>
+  
+        {error && <p className="text-brand-red">{error}</p>}
+  
         <div className="space-y-2">
           <label htmlFor="subscriptionType" className="block font-medium">
             Select Subscription Type
           </label>
           <select
             id="subscriptionType"
-            className="w-full border rounded p-2"
+            className="w-full border border-gray-700 rounded p-2 bg-neutral-800 text-white"
             value={subscriptionType}
             onChange={(e) => setSubscriptionType(e.target.value)}
           >
@@ -68,13 +68,14 @@ export default function UpgradeSubscriptionModal({
             <option value="FEATURED">FEATURED</option>
           </select>
         </div>
-
+  
         {price !== null && (
           <p>
-            Price for <strong>{subscriptionType}</strong>: <strong>{price}</strong> coins
+            Price for <strong>{subscriptionType}</strong>:{" "}
+            <strong>{price}</strong> coins
           </p>
         )}
-
+  
         <div className="flex justify-end space-x-2">
           <Button variant="secondary" onClick={onClose} disabled={loading}>
             Cancel
@@ -85,5 +86,5 @@ export default function UpgradeSubscriptionModal({
         </div>
       </div>
     </div>
-  )
+  )  
 }

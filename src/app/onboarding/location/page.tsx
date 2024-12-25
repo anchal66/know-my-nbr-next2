@@ -165,55 +165,63 @@ export default function OnboardingLocationPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4">
-      <h1 className="text-2xl mb-4">Onboarding - Location</h1>
-      <p>
-        We have detected your location. If you want to change it, use the
-        search box below.
-      </p>
+    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
+      <div className="max-w-md mx-auto space-y-4">
+        <h1 className="text-2xl text-brand-gold mb-4">Onboarding - Location</h1>
+        <p className="text-gray-300">
+          We have detected your location. If you want to change it, use the
+          search box below.
+        </p>
 
-      {/* SEARCH INPUT */}
-      <div className="relative">
-        <Input
-          placeholder="Search for a location..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => {
-            if (suggestions.length > 0) setShowSuggestions(true)
-          }}
-        />
-        {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-10 top-full left-0 w-full bg-white border shadow-md max-h-60 overflow-auto">
-            {suggestions.map((s) => (
-              <div
-                key={s.placeId}
-                className="p-2 hover:bg-gray-200 cursor-pointer"
-                onClick={() => handleSuggestionClick(s)}
-              >
-                {s.description}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        {/* SEARCH INPUT */}
+        <div className="relative">
+          <Input
+            placeholder="Search for a location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true)
+            }}
+            className="bg-neutral-800 border border-gray-700 text-gray-200"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-60 overflow-auto">
+              {suggestions.map((s) => (
+                <div
+                  key={s.placeId}
+                  className="p-2 hover:bg-neutral-700 cursor-pointer"
+                  onClick={() => handleSuggestionClick(s)}
+                >
+                  {s.description}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <p>
-        <strong>Current Address:</strong>{' '}
-        {address || 'No custom address chosen'}
-      </p>
+        <p className="text-gray-300">
+          <strong className="text-brand-gold">Current Address:</strong>{' '}
+          {address || 'No custom address chosen'}
+        </p>
 
-      {/* MAP */}
-      <div className="w-full h-64">
-        <GoogleMap
-          center={{ lat, lng }}
-          zoom={14}
-          mapContainerStyle={{ width: '100%', height: '100%' }}
+        {/* MAP */}
+        <div className="w-full h-64">
+          <GoogleMap
+            center={{ lat, lng }}
+            zoom={14}
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+          >
+            <Marker position={{ lat, lng }} />
+          </GoogleMap>
+        </div>
+
+        <Button 
+          className="bg-brand-gold text-black hover:brightness-110"
+          onClick={handleLetsBegin}
         >
-          <Marker position={{ lat, lng }} />
-        </GoogleMap>
+          Let's Begin
+        </Button>
       </div>
-
-      <Button onClick={handleLetsBegin}>Let's Begin</Button>
     </div>
   )
 }

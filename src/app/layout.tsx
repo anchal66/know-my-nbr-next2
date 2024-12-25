@@ -4,7 +4,7 @@ import { HeaderWrapper } from '@/components/layout/HeaderWrapper';
 import { Footer } from '@/components/layout/Footer';
 
 export const metadata = {
-  title: 'My App',
+  title: 'Know My Nbr',
 }
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className='dark'>
       <body className="min-h-screen flex flex-col">
         <Providers>
           <HeaderWrapper />

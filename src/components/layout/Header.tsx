@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
+import Image from 'next/image'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -58,12 +59,20 @@ export function Header() {
   }
 
   return (
-    <header className="w-full border-b bg-white py-2 px-4 relative z-10">
+    <header className="w-full border-b bg-background text-foreground dark:bg-background dark:text-foreground py-2 px-4 relative z-10">
       <div className="flex items-center justify-between">
         {/* Left side: Logo + hamburger */}
         <div className="flex items-center space-x-4">
           <div className="font-bold text-xl">
-            <Link href="/">Logo</Link>
+          <Link href="/">
+            <Image 
+              src="/logo.png" 
+              alt="Logo" 
+              width={80} 
+              height={40} 
+              priority 
+            />
+          </Link>
           </div>
 
           {/* Hamburger (show on mobile only) */}

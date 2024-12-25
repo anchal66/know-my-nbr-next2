@@ -46,14 +46,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm p-6 border rounded shadow-md">
-        <h1 className="text-2xl font-semibold mb-6 text-center">Login</h1>
+    <div className="flex min-h-screen items-center justify-center bg-neutral-900">
+      <div className="w-full max-w-sm p-6 border border-gray-700 rounded shadow-md bg-neutral-800 text-white">
+        <h1 className="text-2xl font-semibold mb-6 text-center text-brand-gold">Login</h1>
         <Input
           placeholder="Username or Email"
           value={usernameOrEmail}
           onChange={(e) => setUsernameOrEmail(e.target.value)}
-          className="mb-4"
+          className="mb-4 bg-neutral-700 text-white placeholder-gray-400"
           aria-label="Username or Email"
         />
         <Input
@@ -61,17 +61,19 @@ export default function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mb-6"
+          className="mb-6 bg-neutral-700 text-white placeholder-gray-400"
           aria-label="Password"
         />
-        <Button onClick={handleLogin} className="w-full mb-4">Login</Button>
-        <p className="text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link href="/register" className="text-blue-500 hover:underline">
+        <Button onClick={handleLogin} className="w-full mb-4">
+          Login
+        </Button>
+        <p className="text-center text-sm text-gray-400">
+          Don’t have an account?{" "}
+          <Link href="/register" className="text-brand-gold hover:underline">
             Register here
           </Link>
         </p>
       </div>
     </div>
-  )
+  )  
 }
