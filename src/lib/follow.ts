@@ -13,7 +13,7 @@ export async function getFollowPrice(cityId: number): Promise<number> {
   return data.price
 }
 
-interface FollowResponse {
+export interface FollowResponse {
   followId: string
   followedUser: { id: string; username: string }
   startDate: string

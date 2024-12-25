@@ -13,6 +13,8 @@ import {
   SelectContent,
   SelectItem
 } from '@/components/ui/select'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -30,7 +32,13 @@ export function Header() {
     if (isLoggedIn) {
       dispatch(fetchWalletBalance())
     }
+    setUserDetails();
   }, [isLoggedIn, dispatch])
+
+  const setUserDetails = async () => {
+    const userData = await getUserDetails()
+            dispatch(setUserDetail(userData));
+  }
 
   // City logic
   let activeCityName = 'Unknown City'
