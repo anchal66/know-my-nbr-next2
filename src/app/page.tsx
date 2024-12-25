@@ -64,11 +64,6 @@ export default function HomePage() {
   const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([])
 
   useEffect(() => {
-    // If not logged in => redirect
-    // if (!token) {
-    //   router.push('/login')
-    //   return
-    // }
 
     // Load filter from cookies
     const loaded = loadFilters()

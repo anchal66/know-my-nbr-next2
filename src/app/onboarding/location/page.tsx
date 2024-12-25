@@ -48,11 +48,6 @@ export default function OnboardingLocationPage() {
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   useEffect(() => {
-    // If not logged in => redirect (optional, depends on your flow)
-    // if (!token) {
-    //   router.push('/login')
-    //   return
-    // }
 
     // Grab geolocation but do NOT call saveUserLocation automatically
     navigator.geolocation.getCurrentPosition(

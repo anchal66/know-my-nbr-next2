@@ -48,10 +48,6 @@ export default function MessagesPage() {
 
   // Fetch conversations on mount
   useEffect(() => {
-    // if (!token) {
-    //   router.push('/login')
-    //   return
-    // }
     fetchAllConversations(0) // start at page=0
   }, [token, router])
 
