@@ -14,11 +14,7 @@ import {
   SwipeCardUser,
 } from '@/lib/swipeService'
 
-import TinderCard from 'react-tinder-card'
-
-// Re-declare the same shape yourself
-export type SwipeDirection = 'left' | 'right' | 'up' | 'down'
-
+import TinderCard from 'react-tinder-card' // No need to import API
 
 import { FaSlidersH } from 'react-icons/fa'
 import { Button } from '@/components/ui/button'
@@ -27,12 +23,14 @@ import MatchModal from '../components/MatchModel'
 import Image from 'next/image'
 
 /**
- * Because react-tinder-card doesn’t provide a typed ref,
- * we define our own minimal interface that includes a `.swipe()` method.
+ * Custom interface to match the expected API from react-tinder-card
  */
-interface TinderCardRef {
-  swipe: (dir: SwipeDirection) => Promise<void>
+interface CustomTinderCardRef {
+  swipe: (dir?: SwipeDirection) => Promise<void>
+  restoreCard: () => Promise<void>
 }
+
+export type SwipeDirection = 'left' | 'right' | 'up' | 'down'
 
 export default function HomePage() {
   const { token } = useSelector((state: RootState) => state.auth)
@@ -59,7 +57,7 @@ export default function HomePage() {
    * We'll create a ref for each TinderCard so we can programmatically swipe
    * them when the user clicks "Like" or "Nope" buttons.
    */
-  const childRefs = useRef<React.RefObject<TinderCardRef>[]>([])
+  const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([]) // Updated Type
 
   useEffect(() => {
     // If not logged in => redirect
@@ -109,8 +107,8 @@ export default function HomePage() {
       setCards(data)
       setCurrentIndex(data.length - 1)
 
-      // Create references for each card
-      childRefs.current = data.map(() => React.createRef())
+      // Create references for each card using the custom interface
+      childRefs.current = data.map(() => React.createRef<CustomTinderCardRef>())
     } catch (err) {
       console.error('Failed to fetch swipable users:', err)
     }
@@ -196,7 +194,7 @@ export default function HomePage() {
                 ref={childRefs.current[index]}
                 key={user.userId}
                 className="absolute w-full h-full"
-                onSwipe={(dir) => handleSwipe(dir, user, index)}
+                onSwipe={(dir) => handleSwipe(dir as SwipeDirection, user, index)} // Type assertion
                 preventSwipe={['up', 'down']}
               >
                 <SwipeCard user={user} />

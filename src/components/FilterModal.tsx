@@ -1,194 +1,235 @@
-// src/app/nbr-direct/FilterModal.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import * as Slider from '@radix-ui/react-slider'
+import clsx from 'clsx'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from "@/components/ui/select"
-
-import {
-  getGenders,
   getOrientations,
   getHairColors,
   getNationalities,
   getEthnicities,
 } from '@/lib/nbrDirect'
 
-interface OptionItem {
-  id: number
-  name: string
+interface FilterData {
+  orientationIds?: number[]
+  hairColorIds?: number[]
+  nationalityIds?: number[]
+  ageMin?: number
+  ageMax?: number
+  name?: string
 }
 
 interface FilterModalProps {
   onClose: () => void
-  onApply: (filters: {
-    genderIds?: number[],
-    hairColorIds?: number[],
-    orientationIds?: number[],
-    nationalityIds?: number[],
-    ageMin?: number,
-    ageMax?: number
-  }) => void
+  onApply: (filters: FilterData) => void
+  initialFilters?: FilterData
 }
 
-export default function FilterModal({ onClose, onApply }: FilterModalProps) {
-  const [genders, setGenders] = useState<OptionItem[]>([])
-  const [orientations, setOrientations] = useState<OptionItem[]>([])
-  const [hairColors, setHairColors] = useState<OptionItem[]>([])
-  const [nationalities, setNationalities] = useState<OptionItem[]>([])
-  const [ethnicities, setEthnicities] = useState<OptionItem[]>([]) // if needed
+export default function FilterModal({
+  onClose,
+  onApply,
+  initialFilters = {},
+}: FilterModalProps) {
+  const [orientations, setOrientations] = useState<{ id: number; name: string }[]>([])
+  const [hairColors, setHairColors] = useState<{ id: number; name: string }[]>([])
+  const [nationalities, setNationalities] = useState<{ id: number; name: string }[]>([])
+  const [ethnicities, setEthnicities] = useState<{ id: number; name: string }[]>([]) // if needed
 
-  // local filter states
-  const [selectedGenders, setSelectedGenders] = useState<number[]>([])
-  const [selectedOrientations, setSelectedOrientations] = useState<number[]>([])
-  const [selectedHairColors, setSelectedHairColors] = useState<number[]>([])
-  const [selectedNationalities, setSelectedNationalities] = useState<number[]>([])
-  const [ageMin, setAgeMin] = useState<number | undefined>(undefined)
-  const [ageMax, setAgeMax] = useState<number | undefined>(undefined)
+  // local state
+  const [orientationIds, setOrientationIds] = useState<number[]>(
+    initialFilters.orientationIds || []
+  )
+  const [hairColorIds, setHairColorIds] = useState<number[]>(
+    initialFilters.hairColorIds || []
+  )
+  const [nationalityIds, setNationalityIds] = useState<number[]>(
+    initialFilters.nationalityIds || []
+  )
+  const [ageRange, setAgeRange] = useState<[number, number]>([
+    initialFilters.ageMin || 18,
+    initialFilters.ageMax || 80,
+  ])
+  // If you want user name filter here:
+  const [name, setName] = useState(initialFilters.name || '')
 
+  // 1) Load some filter data
   useEffect(() => {
-    // fetch filter options in parallel
-    Promise.all([
-      getGenders(),
-      getOrientations(),
-      getHairColors(),
-      getNationalities(),
-      getEthnicities(),
-    ]).then(([gRes, oRes, hRes, nRes, eRes]) => {
-      setGenders(gRes)
-      setOrientations(oRes)
-      setHairColors(hRes)
-      setNationalities(nRes)
-      setEthnicities(eRes)
-    }).catch(console.error)
+    Promise.all([getOrientations(), getHairColors(), getNationalities(), getEthnicities()])
+      .then(([oRes, hRes, nRes, eRes]) => {
+        setOrientations(oRes)
+        setHairColors(hRes)
+        setNationalities(nRes)
+        setEthnicities(eRes)
+      })
+      .catch(console.error)
   }, [])
 
-  const handleApply = () => {
-    onApply({
-      genderIds: selectedGenders.length ? selectedGenders : undefined,
-      orientationIds: selectedOrientations.length ? selectedOrientations : undefined,
-      hairColorIds: selectedHairColors.length ? selectedHairColors : undefined,
-      nationalityIds: selectedNationalities.length ? selectedNationalities : undefined,
-      ageMin,
-      ageMax,
-    })
-  }
-
-  // We'll demonstrate a simple approach with multi-select boxes or individual selects for each category.
-  // In real UI, you might have checkboxes for each item or multiple `Select`.
-
-  return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white p-4 w-full max-w-lg rounded-md relative">
-        <button className="absolute top-2 right-2 text-sm" onClick={onClose}>X</button>
-        <h2 className="text-xl font-bold mb-4">Filters</h2>
-
-        {/* Age range */}
-        <div className="flex items-center space-x-2 mb-4">
-          <Input
-            type="number"
-            placeholder="Age Min"
-            value={ageMin ?? ''}
-            onChange={(e) => setAgeMin(e.target.value ? Number(e.target.value) : undefined)}
-          />
-          <Input
-            type="number"
-            placeholder="Age Max"
-            value={ageMax ?? ''}
-            onChange={(e) => setAgeMax(e.target.value ? Number(e.target.value) : undefined)}
-          />
-        </div>
-
-        {/* Genders */}
-        <label className="block font-semibold mb-1">Genders</label>
-        <MultiSelect
-          options={genders}
-          selected={selectedGenders}
-          onChange={setSelectedGenders}
-        />
-
-        {/* Orientations */}
-        <label className="block font-semibold mb-1 mt-4">Orientations</label>
-        <MultiSelect
-          options={orientations}
-          selected={selectedOrientations}
-          onChange={setSelectedOrientations}
-        />
-
-        {/* Hair colors */}
-        <label className="block font-semibold mb-1 mt-4">Hair Colors</label>
-        <MultiSelect
-          options={hairColors}
-          selected={selectedHairColors}
-          onChange={setSelectedHairColors}
-        />
-
-        {/* Nationalities */}
-        <label className="block font-semibold mb-1 mt-4">Nationalities</label>
-        <MultiSelect
-          options={nationalities}
-          selected={selectedNationalities}
-          onChange={setSelectedNationalities}
-        />
-
-        {/* (Ethnicities if needed) */}
-        {/* <label className="block font-semibold mb-1 mt-4">Ethnicities</label>
-        <MultiSelect
-          options={ethnicities}
-          selected={selectedEthnicities}
-          onChange={setSelectedEthnicities}
-        /> */}
-
-        <div className="mt-4 flex justify-end space-x-2">
-          <Button variant="secondary" onClick={onClose}>Close</Button>
-          <Button onClick={handleApply}>Apply</Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * A simple multi-select. 
- * For demonstration, we'll create a custom component that uses checkboxes.
- * Alternatively, you could use a more sophisticated approach with 
- * shadcn/ui or Radix multi-select patterns.
- */
-function MultiSelect({
-  options,
-  selected,
-  onChange,
-}: {
-  options: { id: number; name: string }[]
-  selected: number[]
-  onChange: (val: number[]) => void
-}) {
-  const handleCheckbox = (id: number, checked: boolean) => {
+  // 2) For checkboxes
+  function handleCheckboxChange(
+    list: number[],
+    setList: (val: number[]) => void,
+    id: number,
+    checked: boolean
+  ) {
     if (checked) {
-      onChange([...selected, id])
+      setList([...list, id])
     } else {
-      onChange(selected.filter(item => item !== id))
+      setList(list.filter((x) => x !== id))
     }
   }
 
+  function handleAgeSliderChange(val: number[]) {
+    if (val.length === 2) {
+      setAgeRange([val[0], val[1]])
+    }
+  }
+
+  // 3) On apply
+  function handleApply() {
+    let [ageMin, ageMax] = ageRange
+    if (ageMin < 18) ageMin = 18
+    if (ageMax > 80) ageMax = 80
+    if (ageMax < ageMin) ageMax = ageMin
+
+    onApply({
+      orientationIds: orientationIds.length ? orientationIds : undefined,
+      hairColorIds: hairColorIds.length ? hairColorIds : undefined,
+      nationalityIds: nationalityIds.length ? nationalityIds : undefined,
+      ageMin,
+      ageMax,
+      name: name.trim() || undefined,
+    })
+    onClose()
+  }
+
   return (
-    <div className="space-y-1">
-      {options.map((opt) => (
-        <div key={opt.id} className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={selected.includes(opt.id)}
-            onChange={(e) => handleCheckbox(opt.id, e.target.checked)}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-2xl p-6 rounded shadow-md relative space-y-6">
+        <button className="absolute top-3 right-3" onClick={onClose}>
+          X
+        </button>
+        <h2 className="text-2xl font-bold text-center">Advanced Filters</h2>
+
+        {/* Name filter (if you want name here) */}
+        <div>
+          <label className="block font-medium text-sm mb-1">Name</label>
+          <Input
+            placeholder="Search by name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
-          <label>{opt.name}</label>
         </div>
-      ))}
+
+        {/* Age range slider */}
+        <div>
+          <label className="block font-medium text-sm mb-1">
+            Age Range: {ageRange[0]} - {ageRange[1]}
+          </label>
+          <Slider.Root
+            className="relative flex items-center select-none touch-none w-full h-5"
+            value={ageRange}
+            onValueChange={handleAgeSliderChange}
+            min={18}
+            max={80}
+            step={1}
+          >
+            <Slider.Track className="bg-gray-200 rounded-full flex-1 h-[4px]" />
+            <Slider.Range className="absolute h-full bg-blue-500 rounded-full" />
+            <Slider.Thumb
+              className={clsx(
+                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
+              )}
+            />
+            <Slider.Thumb
+              className={clsx(
+                'block w-5 h-5 bg-blue-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
+              )}
+            />
+          </Slider.Root>
+        </div>
+
+        {/* Orientations */}
+        <div>
+          <p className="font-medium text-sm mb-1">Orientation</p>
+          <div className="flex flex-wrap gap-3">
+            {orientations.map((o) => (
+              <label key={o.id} className="flex items-center space-x-1">
+                <input
+                  type="checkbox"
+                  checked={orientationIds.includes(o.id)}
+                  onChange={(e) =>
+                    handleCheckboxChange(
+                      orientationIds,
+                      setOrientationIds,
+                      o.id,
+                      e.target.checked
+                    )
+                  }
+                />
+                <span>{o.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Hair Colors */}
+        <div>
+          <p className="font-medium text-sm mb-1">Hair Color</p>
+          <div className="flex flex-wrap gap-3">
+            {hairColors.map((h) => (
+              <label key={h.id} className="flex items-center space-x-1">
+                <input
+                  type="checkbox"
+                  checked={hairColorIds.includes(h.id)}
+                  onChange={(e) =>
+                    handleCheckboxChange(
+                      hairColorIds,
+                      setHairColorIds,
+                      h.id,
+                      e.target.checked
+                    )
+                  }
+                />
+                <span>{h.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Nationalities */}
+        <div>
+          <p className="font-medium text-sm mb-1">Nationality</p>
+          <div className="flex flex-wrap gap-3">
+            {nationalities.map((n) => (
+              <label key={n.id} className="flex items-center space-x-1">
+                <input
+                  type="checkbox"
+                  checked={nationalityIds.includes(n.id)}
+                  onChange={(e) =>
+                    handleCheckboxChange(
+                      nationalityIds,
+                      setNationalityIds,
+                      n.id,
+                      e.target.checked
+                    )
+                  }
+                />
+                <span>{n.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-2 pt-2">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleApply}>Apply</Button>
+        </div>
+      </div>
     </div>
   )
 }

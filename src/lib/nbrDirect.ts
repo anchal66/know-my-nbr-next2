@@ -44,6 +44,22 @@ interface SearchResponse {
 
 /** ========================= API calls ========================= */
 
+export async function searchCitiesWithCounts(
+  searchTerm: string,
+  page = 0,
+  size = 5
+): Promise<any> {
+  // GET /api/v1/users/locations/city/user-count?search=<term>&page=0&size=5
+  const { data } = await api.get('/api/v1/users/locations/city/user-count', {
+    params: {
+      search: searchTerm,
+      page,
+      size,
+    },
+  })
+  return data
+}
+
 /** 1. Fetch city user counts */
 export async function getCityUserCounts(): Promise<CityUserCount[]> {
   const { data } = await api.get('/api/v1/users/locations/city/user-count')
