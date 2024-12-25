@@ -24,7 +24,7 @@ export default function FilterModal({
   orientations,
   onSave,
 }: SwipeFilterModalProps) {
-  let [distancePreference, setDistancePreference] = useState<number>(
+  const [distancePreference, setDistancePreference] = useState<number>(
     initialFilters.distancePreference
   )
   const [ageRange, setAgeRange] = useState<[number, number]>([
@@ -56,8 +56,8 @@ export default function FilterModal({
   function handleSave() {
     let [ageMin, ageMax] = ageRange
     // Basic checks
-    if (distancePreference < 1) distancePreference = 1
-    if (distancePreference > 100) distancePreference = 100
+    if (distancePreference < 1) setDistancePreference(1)
+    if (distancePreference > 100) setDistancePreference(100)
     if (ageMin < 18) ageMin = 18
     if (ageMin > 80) ageMin = 80
     if (ageMax < 18) ageMax = 18

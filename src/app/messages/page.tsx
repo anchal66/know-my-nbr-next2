@@ -44,6 +44,15 @@ export default function MessagesPage() {
       router.push('/login')
       return
     }
+    const initStomp = () => {
+      const client = initStompClient({
+        token,
+        onConnected: () => console.log('[STOMP] Connected'),
+        onDisconnected: () => console.log('[STOMP] Disconnected'),
+        onError: (err) => console.error('[STOMP] Error:', err),
+      })
+      stompClientRef.current = client
+    }  
     initStomp()  // set up STOMP only once
     fetchAllConversations()
 
