@@ -18,7 +18,8 @@ import {
   fetchSwipableUsers,
   recordSwipe,
   OptionItem,
-  SwipeCardUser
+  SwipeCardUser,
+  calculateAge
 } from '@/lib/swipeService'
 
 import TinderCard from 'react-tinder-card'
@@ -124,7 +125,7 @@ export default function HomePage() {
     try {
       const response = await recordSwipe(
         direction === 'left' ? 'DISLIKE' : 'LIKE',
-        user.userId
+        user.id
       )
       if (response.match) {
         // It's a match
@@ -132,7 +133,7 @@ export default function HomePage() {
         setMatchModalOpen(true)
       }
       // Remove card locally
-      setCards((prev) => prev.filter((c) => c.userId !== user.userId))
+      setCards((prev) => prev.filter((c) => c.id !== user.id))
       setCurrentIndex((prev) => prev - 1)
     } catch (err) {
       console.error('Error recording swipe:', err)
@@ -190,7 +191,7 @@ export default function HomePage() {
             {cards.map((user, index) => (
               <TinderCard
                 ref={childRefs.current[index]}
-                key={`${user.userId}-${index}`} // Ensure unique key
+                key={`${user.id}-${index}`} // Ensure unique key
                 className="absolute w-full h-full"
                 onSwipe={(dir) =>
                   handleSwipe(dir as SwipeDirection, user, index)
@@ -247,6 +248,8 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
   const [imageIndex, setImageIndex] = useState(0)
   const media = (user as any).media || []
 
+  const age = calculateAge(user.dateOfBirth);
+
   const handleImageClick = () => {
     if (media.length > 0) {
       setImageIndex((prev) => (prev + 1) % media.length)
@@ -279,10 +282,10 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
       {/* Info */}
       <div className="p-4 flex flex-col gap-1">
         <h3
-          className="text-xl font-semibold cursor-pointer hover:underline"
+          className="text-xl text-black font-semibold cursor-pointer hover:underline"
           onClick={handleNameClick}
         >
-          {user.name}, {user.age}
+          {user.name}, age: {age}
         </h3>
         <p className="text-sm text-gray-600 mb-2">
           {user.bio || 'No bio available.'}

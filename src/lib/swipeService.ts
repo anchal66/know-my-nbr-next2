@@ -9,12 +9,33 @@ export interface OptionItem {
 }
 
 export interface SwipeCardUser {
-  userId: string
+  id: string
   name: string
   bio: string
-  age: number
-  distance: number
-  // ...any other fields
+  dateOfBirth: string
+  distance: number,
+  gender: string,
+  orientation: string,
+  ethnicity: string,
+  heightCm: string,
+  hairColor: string
+}
+
+export function calculateAge(dateOfBirth: string) {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  // If birth month hasn't occurred yet this year, or it's the birth month but the day hasn't occurred yet, subtract one from age
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return age;
 }
 
 /** 1) Fetch Genders */
