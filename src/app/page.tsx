@@ -1,31 +1,35 @@
+// src/app/page.tsx
+
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
-import { loadFilters, saveFilters, defaultFilters, SwipeFilters } from '@/lib/filters'
+import {
+  loadFilters,
+  saveFilters,
+  defaultFilters,
+  SwipeFilters
+} from '@/lib/filters'
 import {
   fetchGenders,
   fetchOrientations,
   fetchSwipableUsers,
   recordSwipe,
   OptionItem,
-  SwipeCardUser,
+  SwipeCardUser
 } from '@/lib/swipeService'
 
-import TinderCard from 'react-tinder-card' // No need to import API
-
+import TinderCard from 'react-tinder-card'
 import { FaSlidersH } from 'react-icons/fa'
 import { Button } from '@/components/ui/button'
 import FilterModal from '../components/SwipeFilterModal'
 import MatchModal from '../components/MatchModel'
 import Image from 'next/image'
 
-/**
- * Custom interface to match the expected API from react-tinder-card
- */
-interface CustomTinderCardRef {
+/** Local type for react-tinder-card references */
+export interface CustomTinderCardRef {
   swipe: (dir?: SwipeDirection) => Promise<void>
   restoreCard: () => Promise<void>
 }
@@ -36,12 +40,12 @@ export default function HomePage() {
   const { token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
 
-  /** Filter & user data states */
+  // Filter & user data
   const [genders, setGenders] = useState<OptionItem[]>([])
   const [orientations, setOrientations] = useState<OptionItem[]>([])
-  const [cards, setCards] = useState<SwipeCardUser[]>([]) // swipable users
+  const [cards, setCards] = useState<SwipeCardUser[]>([])
 
-  /** Filter state */
+  // Filter state
   const [filters, setFilters] = useState<SwipeFilters>(defaultFilters)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [firstLoad, setFirstLoad] = useState(true)
@@ -50,21 +54,21 @@ export default function HomePage() {
   const [matchModalOpen, setMatchModalOpen] = useState(false)
   const [matchId, setMatchId] = useState<string | null>(null)
 
-  /** For tracking which card is on top (the last in `cards`) */
+  // Track the top card
   const [currentIndex, setCurrentIndex] = useState(-1)
 
   /**
-   * We'll create a ref for each TinderCard so we can programmatically swipe
-   * them when the user clicks "Like" or "Nope" buttons.
+   * We'll create a ref for each TinderCard so we can programmatically swipe them
+   * when the user clicks "Like" or "Nope" buttons.
    */
-  const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([]) // Updated Type
+  const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([])
 
   useEffect(() => {
     // If not logged in => redirect
-    if (!token) {
-      router.push('/login')
-      return
-    }
+    // if (!token) {
+    //   router.push('/login')
+    //   return
+    // }
 
     // Load filter from cookies
     const loaded = loadFilters()
@@ -75,7 +79,7 @@ export default function HomePage() {
       setShowFilterModal(true)
     }
 
-    // Fetch Genders & Orientations
+    // Fetch Genders & Orientations in parallel
     Promise.all([fetchGenders(), fetchOrientations()])
       .then(([gendersData, orientationsData]) => {
         setGenders(gendersData)
@@ -102,7 +106,7 @@ export default function HomePage() {
         genderIds: filters.genderIds,
         orientationIds: filters.orientationIds,
         page: 0,
-        size: 10,
+        size: 10
       })
       setCards(data)
       setCurrentIndex(data.length - 1)
@@ -161,10 +165,9 @@ export default function HomePage() {
     saveFilters(updated)
   }
 
-  // RENDER
   return (
-    <div className="relative w-full h-screen flex flex-col bg-gradient-to-b from-gray-100 to-gray-200">
-      {/* Filter gear */}
+    <div className="relative w-full h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-100">
+      {/* Filter gear button */}
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={handleOpenFilters}
@@ -192,9 +195,11 @@ export default function HomePage() {
             {cards.map((user, index) => (
               <TinderCard
                 ref={childRefs.current[index]}
-                key={user.userId}
+                key={`${user.userId}-${index}`} // Ensure unique key
                 className="absolute w-full h-full"
-                onSwipe={(dir) => handleSwipe(dir as SwipeDirection, user, index)} // Type assertion
+                onSwipe={(dir) =>
+                  handleSwipe(dir as SwipeDirection, user, index)
+                }
                 preventSwipe={['up', 'down']}
               >
                 <SwipeCard user={user} />
@@ -204,18 +209,18 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Bottom buttons */}
+      {/* Bottom LIKE/NOPE buttons */}
       {cards.length > 0 && (
         <div className="flex justify-center items-center gap-6 mb-6">
           <button
             onClick={() => swipe('left')}
-            className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow hover:shadow-md text-red-500 text-xl font-semibold"
+            className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow hover:shadow-lg text-red-500 text-xl font-semibold transition-transform hover:scale-105"
           >
             NOPE
           </button>
           <button
             onClick={() => swipe('right')}
-            className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow hover:shadow-md text-green-500 text-xl font-semibold"
+            className="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow hover:shadow-lg text-green-500 text-xl font-semibold transition-transform hover:scale-105"
           >
             LIKE
           </button>
@@ -241,7 +246,7 @@ export default function HomePage() {
   )
 }
 
-/** The card UI with multiple images. */
+/** Card with multiple images. */
 function SwipeCard({ user }: { user: SwipeCardUser }) {
   const router = useRouter()
   const [imageIndex, setImageIndex] = useState(0)
@@ -259,7 +264,7 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
   }
 
   return (
-    <div className="w-full h-full rounded-xl bg-white shadow-md overflow-hidden flex flex-col">
+    <div className="w-full h-full rounded-xl bg-white shadow-lg overflow-hidden flex flex-col">
       {/* Image area */}
       <div className="relative flex-1" onClick={handleImageClick}>
         {media.length > 0 ? (
@@ -284,9 +289,13 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
         >
           {user.name}, {user.age}
         </h3>
-        <p className="text-sm text-gray-600 mb-2">{user.bio}</p>
+        <p className="text-sm text-gray-600 mb-2">
+          {user.bio || 'No bio available.'}
+        </p>
         {typeof user.distance === 'number' && (
-          <p className="text-sm text-gray-500 mb-2">~{user.distance} km away</p>
+          <p className="text-sm text-gray-500 mb-2">
+            ~{user.distance} km away
+          </p>
         )}
       </div>
     </div>

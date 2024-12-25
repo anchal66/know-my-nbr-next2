@@ -48,10 +48,10 @@ export default function MessagesPage() {
 
   // Fetch conversations on mount
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
+    // if (!token) {
+    //   router.push('/login')
+    //   return
+    // }
     fetchAllConversations(0) // start at page=0
   }, [token, router])
 
@@ -148,9 +148,9 @@ export default function MessagesPage() {
   // ----------------------------------------------------------------
   // Render the page
   // ----------------------------------------------------------------
-  if (!token) {
-    return <p className="p-4">Redirecting to login...</p>
-  }
+  // if (!token) {
+  //   return <p className="p-4">Redirecting to login...</p>
+  // }
 
   // Possibly get the conversation list from conversationPage?.content
   const conversationList = conversationPage?.content || []

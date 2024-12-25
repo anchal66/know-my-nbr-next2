@@ -1,3 +1,5 @@
+// src/lib/layout.tsx
+
 import { Providers } from './providers';
 import "./globals.css";
 import { HeaderWrapper } from '@/components/layout/HeaderWrapper';
