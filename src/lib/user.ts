@@ -1,4 +1,6 @@
 import api from './api'
+import { FollowResponse } from './follow'
+import { Subscription } from './subscription'
 
 export interface UserProfile {
   id: string
@@ -64,6 +66,10 @@ export interface UserDetailResponse {
   websites: Website[]
   media: MediaItem[]
   locations: LocationItem[]
+  followers: FollowResponse[],
+  follows: FollowResponse[],
+  subscriptionType: Subscription,
+  activeCityId: string
 }
 
 export async function getUserDetails(): Promise<UserDetailResponse> {

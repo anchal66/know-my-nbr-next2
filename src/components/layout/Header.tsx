@@ -2,11 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { RootState, AppDispatch } from '@/state/store'
 import Link from 'next/link'
+import { RootState, AppDispatch } from '@/state/store'
 import { fetchWalletBalance } from '@/state/slices/walletSlice'
 import { HeaderAddFundsModal } from '../HeaderAddFundsModal'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from '@/components/ui/select'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -15,103 +23,152 @@ export function Header() {
   const { balance } = useSelector((state: RootState) => state.wallet)
 
   const [showAddFundsModal, setShowAddFundsModal] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isLoggedIn = !!token && username
 
+  // Fetch wallet if logged in
   useEffect(() => {
-    // If the user is logged in, fetch wallet balance
     if (isLoggedIn) {
       dispatch(fetchWalletBalance())
     }
+    setUserDetails();
   }, [isLoggedIn, dispatch])
 
+  const setUserDetails = async () => {
+    const userData = await getUserDetails()
+            dispatch(setUserDetail(userData));
+  }
+
+  // City logic
   let activeCityName = 'Unknown City'
   let otherCities: string[] = []
-
   if (isLoggedIn && userDetail && userDetail.locations.length > 0) {
-    const activeLocation = userDetail.locations.find(loc => loc.isActive)
-    if (activeLocation) {
-      activeCityName = activeLocation.city.name
+    const activeLoc = userDetail.locations.find(loc => loc.isActive)
+    if (activeLoc) {
+      activeCityName = activeLoc.city.name
     }
     otherCities = userDetail.locations
       .filter(loc => !loc.isActive)
       .map(loc => loc.city.name)
   }
 
+  function toggleMobileMenu() {
+    setMobileMenuOpen(prev => !prev)
+  }
+
   return (
-    <header className="w-full border-b bg-white py-2 px-4 flex items-center justify-between">
-      {/* Left side: Logo and Nav links */}
-      <div className="flex items-center space-x-4">
-        <div className="font-bold text-xl">
-          <Link href="/">Logo</Link>
-        </div>
-        <nav className="hidden md:flex space-x-4">
-          <Link href="/">Home</Link>
-          {isLoggedIn && <Link href={`/${username}`}>My Profile</Link>}
-          {isLoggedIn && <Link href="/nbr-direct">NBR Direct</Link>}
-          {isLoggedIn && <Link href="/messages">Messages</Link>}
-        </nav>
-      </div>
-
-      {/* Center: Active city and dropdown of other cities */}
-      <div className="flex-1 flex justify-center">
-        {isLoggedIn && userDetail ? (
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold">{activeCityName}</span>
-            {otherCities.length > 0 && (
-              <Select onValueChange={() => {}}>
-                <SelectTrigger className="w-32" disabled>
-                  <SelectValue placeholder="Other Cities" />
-                </SelectTrigger>
-                <SelectContent>
-                  {otherCities.map((city, idx) => (
-                    <SelectItem key={idx} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+    <header className="w-full border-b bg-white py-2 px-4 relative z-10">
+      <div className="flex items-center justify-between">
+        {/* Left side: Logo + hamburger */}
+        <div className="flex items-center space-x-4">
+          <div className="font-bold text-xl">
+            <Link href="/">Logo</Link>
           </div>
-        ) : (
-          <div className="text-gray-500 italic">Not Logged In</div>
-        )}
-      </div>
 
-      {/* Right side: Wallet info (balance + plus icon) */}
-      <div className="flex items-center space-x-4">
-        {isLoggedIn && (
-          <div className="flex items-center space-x-2">
-            <span className="font-semibold">
-              {'\u20B9'} {balance.toFixed(2)} {/* INR symbol or use $ for USD, etc. */}
-            </span>
-            <button
-              onClick={() => setShowAddFundsModal(true)}
-              className="rounded-full border p-1 hover:bg-gray-100"
+          {/* Hamburger (show on mobile only) */}
+          <button
+            className="md:hidden"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle mobile menu"
+          >
+            <svg
+              className="h-6 w-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="h-5 w-5 text-green-500"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Center: City + Wallet (visible on both mobile and desktop) */}
+        <div className="flex items-center space-x-4">
+          {isLoggedIn ? (
+            <>
+              {/* City info */}
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold">{activeCityName}</span>
+                {otherCities.length > 0 && (
+                  <Select onValueChange={() => {}} disabled>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Other Cities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {otherCities.map((city, idx) => (
+                        <SelectItem key={idx} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Wallet info */}
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold">
+                  {'\u20B9'} {balance.toFixed(2)}
+                </span>
+                <button
+                  onClick={() => setShowAddFundsModal(true)}
+                  className="rounded-full border p-1 hover:bg-gray-100"
+                >
+                  <svg
+                    className="h-5 w-5 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-gray-500 italic">Not Logged In</div>
+          )}
+        </div>
       </div>
+
+      {/* Desktop Nav */}
+      <nav className="hidden md:flex space-x-4 mt-2">
+        <Link href="/">Home</Link>
+        {isLoggedIn && <Link href={`/${username}`}>My Profile</Link>}
+        {isLoggedIn && <Link href="/nbr-direct">NBR Direct</Link>}
+        {isLoggedIn && <Link href="/messages">Messages</Link>}
+      </nav>
+
+      {/* Mobile nav (toggle) */}
+      {mobileMenuOpen && (
+        <div className="md:hidden mt-2 bg-white border-t py-2">
+          <nav className="flex flex-col space-y-2 px-4">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+              Home
+            </Link>
+            {isLoggedIn && (
+              <>
+                <Link href={`/${username}`} onClick={() => setMobileMenuOpen(false)}>
+                  My Profile
+                </Link>
+                <Link href="/nbr-direct" onClick={() => setMobileMenuOpen(false)}>
+                  NBR Direct
+                </Link>
+                <Link href="/messages" onClick={() => setMobileMenuOpen(false)}>
+                  Messages
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      )}
 
       {/* Add Funds Modal */}
       {showAddFundsModal && (
-        <HeaderAddFundsModal
-          onClose={() => setShowAddFundsModal(false)}
-        />
+        <HeaderAddFundsModal onClose={() => setShowAddFundsModal(false)} />
       )}
     </header>
   )
