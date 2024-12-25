@@ -39,12 +39,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function initPage() {
-      // 1) If not logged in => redirect to /login
-      // if (!token) {
-      //   router.push('/login')
-      //   return
-      // }
-
       setLoading(true)
 
       // 2) If it's my profile
