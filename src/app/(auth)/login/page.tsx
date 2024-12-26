@@ -1,8 +1,8 @@
 // src/app/(auth)/login/page.tsx
 'use client'
 
-import { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { setCredentials } from '@/state/slices/authSlice'
 import { loginUser } from '@/lib/auth'
 import { setToken } from '@/lib/cookies'
@@ -13,12 +13,44 @@ import { useRouter } from 'next/navigation'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Link from 'next/link'
+import { RootState } from '@/state/store'
 
 export default function LoginPage() {
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
   const dispatch = useDispatch()
   const router = useRouter()
+
+
+  useEffect(() => {
+    if (token) {
+      if (onBoardingStatus === 'FINISHED') {
+        router.push('/')
+        return
+      }
+      if (onBoardingStatus === 'LOCATION') {
+        router.push('/onboarding/location')
+        return
+      }
+      if (onBoardingStatus === 'MEDIA_UPLOADED') {
+        router.push('/onboarding/media')
+        return
+      }
+      if (onBoardingStatus === 'PRIVATE_CONTACT') {
+        router.push('/onboarding/private-data')
+        return
+      }
+      if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+        router.push('/onboarding/profile')
+        return
+      }
+      if (onBoardingStatus !== 'FINISHED') {
+        router.push('/onboarding/profile')
+        return
+      }
+    }
+  }, [token, onBoardingStatus, router])
 
   const handleLogin = async () => {
     try {
@@ -75,5 +107,5 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
-  )  
+  )
 }

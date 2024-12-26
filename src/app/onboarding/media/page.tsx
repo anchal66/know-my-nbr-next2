@@ -23,23 +23,10 @@ export default function OnboardingMediaPage() {
   const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
-    // if (!token) {
-    //   router.push('/login')
-    //   return
-    // }
-    // if (onBoardingStatus === 'FINISHED') {
-    //   router.push('/')
-    //   return
-    // }
-    // if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
-    //   router.push('/onboarding/profile')
-    //   return
-    // }
-    // if (onBoardingStatus === 'PROFILE') {
-    //   router.push('/onboarding/private-data')
-    //   return
-    // }
-    // By now we should be at least `PRIVATE_CONTACT` to access media step.
+    if (onBoardingStatus === 'FINISHED') {
+      router.push('/')
+      return
+    }
   }, [token, onBoardingStatus, router])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

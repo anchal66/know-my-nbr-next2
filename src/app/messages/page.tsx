@@ -19,7 +19,7 @@ import {
 
 export default function MessagesPage() {
   // 1) Auth check
-  const { token } = useSelector((state: RootState) => state.auth)
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
 
   // 2) Local state
@@ -48,8 +48,29 @@ export default function MessagesPage() {
 
   // Fetch conversations on mount
   useEffect(() => {
+    if (onBoardingStatus === 'LOCATION') {
+      router.push('/onboarding/location') 
+      return
+    }
+    if (onBoardingStatus === 'MEDIA_UPLOADED') {
+      router.push('/onboarding/media') 
+      return
+    }
+    if (onBoardingStatus === 'PRIVATE_CONTACT') {
+      router.push('/onboarding/private-data') 
+      return
+    }
+    if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+      router.push('/onboarding/profile') 
+      return
+    }
+    if (onBoardingStatus !== 'FINISHED') {
+      router.push('/onboarding/profile') 
+      return
+    }
+
     fetchAllConversations(0) // start at page=0
-  }, [token, router])
+  }, [token, onBoardingStatus, router])
 
   async function fetchAllConversations(page: number) {
     try {

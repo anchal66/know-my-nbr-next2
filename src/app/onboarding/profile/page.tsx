@@ -47,10 +47,6 @@ export default function OnboardingProfilePage() {
   const [hairColors, setHairColors] = useState<{id:number, name:string}[]>([])
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
     if (onBoardingStatus === 'FINISHED') {
       router.push('/')
       return

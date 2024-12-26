@@ -20,7 +20,7 @@ interface Suggestion {
 }
 
 export default function OnboardingLocationPage() {
-  const { token } = useSelector((state: RootState) => state.auth)
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
   const dispatch = useDispatch()
 
@@ -48,7 +48,10 @@ export default function OnboardingLocationPage() {
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   useEffect(() => {
-
+    if (onBoardingStatus === 'FINISHED') {
+      router.push('/')
+      return
+    }
     // Grab geolocation but do NOT call saveUserLocation automatically
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -64,6 +67,10 @@ export default function OnboardingLocationPage() {
 
   /** Whenever user types in search box, fetch suggestions. */
   useEffect(() => {
+    if (onBoardingStatus === 'FINISHED') {
+      router.push('/')
+      return
+    }
     const fetchSuggestions = async () => {
       if (searchTerm.length > 2) {
         const data = await getLocationSuggestions(searchTerm)
@@ -117,7 +124,7 @@ export default function OnboardingLocationPage() {
         latitude: lat ? lat.toString() : '',
         longitude: lng ? lng.toString() : '',
         isActive: true,
-        refreshToken, 
+        refreshToken,
       })
       // finalData might contain a final refreshToken from the server
       const finalToken = finalData.refreshToken
@@ -210,7 +217,7 @@ export default function OnboardingLocationPage() {
           </GoogleMap>
         </div>
 
-        <Button 
+        <Button
           className="bg-brand-gold text-black hover:brightness-110"
           onClick={handleLetsBegin}
         >
