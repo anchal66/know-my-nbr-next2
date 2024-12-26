@@ -5,11 +5,14 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
 import { useRouter } from 'next/navigation'
+
+// Keep your existing imports from onboarding.ts
 import {
   submitOnboardingPrivateData,
   getSocialMediaPlatforms,
   getMessagingApps
 } from '@/lib/onboarding'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -21,13 +24,12 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 
-// ---------- NEW IMPORTS FOR VALIDATION & PHONE INPUT ----------
-import PhoneInput from 'react-phone-input-2'
-import 'react-phone-input-2/lib/style.css'  // Required for default styles
-// --------------------------------------------------------------
+// --- NEW IMPORT: getUserCountryCode for geolocation fallback ---
+import { getUserCountryCode } from '@/lib/geo'
 
-// You can also consider adding a more robust validation library 
-// like 'react-hook-form' or 'yup' if you need more advanced validation.
+// --- For Phone Input ---
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 interface MessagingApp {
   id: number
@@ -39,11 +41,9 @@ interface SocialMediaPlatform {
   name: string
 }
 
-// We will store the entire phone number in 'number' 
-// and the library will handle the country code internally.
 interface ContactNumberForm {
-  number: string  // Full phone e.g. "+1 234 567 8901"
-  countryCode: string  // Might not be needed with react-phone-input-2, but let's keep it to not break anything.
+  number: string
+  countryCode: string
   appIds: number[]
   isPrivate: boolean
 }
@@ -66,6 +66,10 @@ export default function OnboardingPrivateDataPage() {
   const [socialMediaPlatforms, setSocialMediaPlatforms] = useState<SocialMediaPlatform[]>([])
   const [messagingApps, setMessagingApps] = useState<MessagingApp[]>([])
 
+  // ---- New State: default country code for PhoneInput
+  const [defaultCountry, setDefaultCountry] = useState<string>('us')
+
+  // ---- Form state
   const [contactNumbers, setContactNumbers] = useState<ContactNumberForm[]>([
     { number: '', countryCode: '', appIds: [], isPrivate: false }
   ])
@@ -76,55 +80,69 @@ export default function OnboardingPrivateDataPage() {
     { platformId: null, url: '', isPrivate: false }
   ])
 
-  // ---------- State for basic validation messages ----------
+  // ---- Validation error messages
   const [contactError, setContactError] = useState<string>('')
   const [websiteError, setWebsiteError] = useState<string>('')
   const [socialMediaError, setSocialMediaError] = useState<string>('')
-  // ---------------------------------------------------------
 
+  // -------------------------------------------------------
+  //                    useEffect
+  // -------------------------------------------------------
   useEffect(() => {
     if (onBoardingStatus === 'FINISHED') {
       router.push('/')
       return
     }
 
-    async function fetchOptions() {
-      const [fetchedSocialMedia, fetchedApps] = await Promise.all([
-        getSocialMediaPlatforms(),
-        getMessagingApps()
-      ])
-      setSocialMediaPlatforms(fetchedSocialMedia)
-      setMessagingApps(fetchedApps)
-    }
+    async function init() {
+      // 1) Attempt to fetch the user's country code
+      try {
+        const userCountry = await getUserCountryCode()
+        setDefaultCountry(userCountry) // e.g. 'in' or 'us'...
+      } catch {
+        // fallback
+        setDefaultCountry('us')
+      }
 
-    fetchOptions()
+      // 2) Fetch social media and messaging apps
+      try {
+        const [fetchedSocialMedia, fetchedApps] = await Promise.all([
+          getSocialMediaPlatforms(),
+          getMessagingApps()
+        ])
+        setSocialMediaPlatforms(fetchedSocialMedia)
+        setMessagingApps(fetchedApps)
+      } catch (error) {
+        console.error('Error fetching social/messaging data:', error)
+      }
+    }
+    init()
   }, [token, onBoardingStatus, router])
 
-  // -------------------- Validation Helpers --------------------
+  // -------------------------------------------------------
+  //                 Validation Helpers
+  // -------------------------------------------------------
   const isValidUrl = (str: string) => {
-    // This is a simple regex for demonstration. 
-    // Consider using a stronger validation if needed.
-    // Also allows the possibility of "@" for social media.
     const urlPattern = new RegExp(
-      '^(https?:\\/\\/)?' + // optional protocol
+      '^(https?:\\/\\/)?' +          // optional protocol
       '((([a-zA-Z0-9\\-_]+)\\.)+[a-zA-Z]{2,})' + // domain name
-      '(\\:[0-9]{1,5})?' + // optional port
-      '(\\/.*)?$' // optional path
+      '(\\:[0-9]{1,5})?' +           // optional port
+      '(\\/.*)?$'                    // optional path
     )
     return urlPattern.test(str)
   }
 
   const isSocialMediaValid = (input: string) => {
-    // either a valid URL or it starts with @
+    // either a valid URL or starts with '@'
     if (!input.trim()) return false
     if (input.startsWith('@')) return true
     return isValidUrl(input)
   }
-  // -----------------------------------------------------------
 
-  // ---------------- Contact Numbers Handlers -----------------
+  // -------------------------------------------------------
+  //                Contact Numbers Handlers
+  // -------------------------------------------------------
   const addContactNumber = () => {
-    // Check the last contactNumber is not empty before adding a new one
     const lastContact = contactNumbers[contactNumbers.length - 1]
     if (!lastContact.number) {
       setContactError('Please fill in the current phone number before adding another.')
@@ -143,19 +161,17 @@ export default function OnboardingPrivateDataPage() {
     setContactNumbers((prev) => prev.filter((_, i) => i !== index))
   }
 
-  // We no longer need to handle countryCode and number separately 
-  // because react-phone-input-2 will store entire phone in 'number'
   const updateContactNumberField = (index: number, field: keyof ContactNumberForm, value: any) => {
     setContactError('')
     setContactNumbers((prev) =>
       prev.map((cn, i) => (i === index ? { ...cn, [field]: value } : cn))
     )
   }
-  // -----------------------------------------------------------
 
-  // ---------------- Websites Handlers ------------------------
+  // -------------------------------------------------------
+  //                Websites Handlers
+  // -------------------------------------------------------
   const addWebsite = () => {
-    // Check last website is not empty/invalid
     const lastWebsite = websites[websites.length - 1]
     if (!lastWebsite.url) {
       setWebsiteError('Please fill in the current Website before adding another.')
@@ -181,12 +197,12 @@ export default function OnboardingPrivateDataPage() {
       prev.map((w, i) => (i === index ? { ...w, [field]: value } : w))
     )
   }
-  // -----------------------------------------------------------
 
-  // ---------------- Social Media Handlers --------------------
+  // -------------------------------------------------------
+  //              Social Media Handlers
+  // -------------------------------------------------------
   const addSocialMedia = () => {
     const lastSM = socialMediaAccounts[socialMediaAccounts.length - 1]
-    // If last is empty or invalid
     if (!lastSM.url) {
       setSocialMediaError('Please fill in the current Social Media before adding another.')
       return
@@ -212,18 +228,16 @@ export default function OnboardingPrivateDataPage() {
     setSocialMediaAccounts((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const updateSocialMediaField = (
-    index: number,
-    field: keyof SocialMediaForm,
-    value: any
-  ) => {
+  const updateSocialMediaField = (index: number, field: keyof SocialMediaForm, value: any) => {
     setSocialMediaError('')
     setSocialMediaAccounts((prev) =>
       prev.map((sm, i) => (i === index ? { ...sm, [field]: value } : sm))
     )
   }
-  // -----------------------------------------------------------
 
+  // -------------------------------------------------------
+  //                    Submission
+  // -------------------------------------------------------
   const handleSubmit = async () => {
     // Filter out empty inputs
     const filteredContactNumbers = contactNumbers.filter((cn) => cn.number.trim() !== '')
@@ -231,8 +245,6 @@ export default function OnboardingPrivateDataPage() {
     const filteredSocialMedia = socialMediaAccounts.filter(
       (sm) => sm.platformId && sm.url.trim() !== ''
     )
-
-    // Optionally you can run a final validation pass here
 
     const payload = {
       contactNumbers: filteredContactNumbers,
@@ -244,48 +256,63 @@ export default function OnboardingPrivateDataPage() {
       await submitOnboardingPrivateData(payload)
       router.push('/onboarding/media')
     } catch (error) {
-      console.error(error)
+      console.error('Error submitting private data:', error)
     }
   }
 
+  // -------------------------------------------------------
+  //                     RENDER
+  // -------------------------------------------------------
   return (
     <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <h1 className="text-2xl text-brand-gold">Onboarding - Private Data</h1>
 
-        {/* ------------------------------------
-            CONTACT NUMBERS SECTION 
-        --------------------------------------*/}
+        {/* =================== CONTACT NUMBERS =================== */}
         <h2 className="text-xl text-brand-gold">Contact Numbers</h2>
         {contactNumbers.map((contact, index) => (
           <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-4">
-            
-            {/* REACT-PHONE-INPUT-2 */}
+            {/* PHONE INPUT */}
             <div className="space-y-1">
               <label className="text-sm text-gray-400">
                 Phone Number <span className="text-xs">(with Country Code)</span>
               </label>
               <PhoneInput
-                country={'us'}
+                country={defaultCountry}   // <-- auto-detected or fallback
                 value={contact.number}
                 onChange={(phone) => {
                   updateContactNumberField(index, 'number', phone)
-                  // If you want to extract country code separately:
-                  // updateContactNumberField(index, 'countryCode', someParsingLogic(phone))
                 }}
-                inputClass="!bg-neutral-800 !border !border-gray-700 !text-gray-200 !w-full"
-                buttonClass="!bg-neutral-700 !border !border-gray-600"
-                // You can add more props or styling as needed
+                // If you also want to track the 2-letter country code:
+                // onCountryChange={(countryCode) => {
+                //   updateContactNumberField(index, 'countryCode', countryCode)
+                // }}
+                // ------ STYLING for Dark Theme ------
+                containerStyle={{ backgroundColor: 'transparent' }}
+                inputStyle={{
+                  backgroundColor: '#1f2937', // Tailwind 'bg-gray-800'
+                  color: '#fff',
+                  border: '1px solid #374151',
+                  width: '100%'
+                }}
+                buttonStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151'
+                }}
+                dropdownStyle={{
+                  backgroundColor: '#111827', // Tailwind 'bg-gray-900'
+                  color: '#fff',
+                  border: '1px solid #374151'
+                }}
               />
               <p className="text-xs text-gray-500">
                 Hint: Select a country from the dropdown, then enter your phone number.
               </p>
             </div>
 
-            {/* MESSAGING APPS - now in a grid */}
+            {/* MESSAGING APPS */}
             <div className="space-y-2">
               <p className="text-gray-300">Messaging Apps (Select any):</p>
-              {/* Grid container */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {messagingApps.map((app) => (
                   <div
@@ -311,7 +338,7 @@ export default function OnboardingPrivateDataPage() {
               </div>
             </div>
 
-            {/* IS PRIVATE CHECKBOX */}
+            {/* PRIVATE CHECKBOX */}
             <div className="flex items-center space-x-2">
               <Checkbox
                 checked={contact.isPrivate}
@@ -321,6 +348,9 @@ export default function OnboardingPrivateDataPage() {
                 className="accent-brand-gold"
               />
               <label>Private</label>
+              <p className="text-xs text-yellow-700">
+                Your Private Contacts will only be seen to followed users.
+              </p>
             </div>
 
             {index > 0 && (
@@ -341,9 +371,7 @@ export default function OnboardingPrivateDataPage() {
           Add Another Contact
         </Button>
 
-        {/* ------------------------------------
-            WEBSITES SECTION 
-        --------------------------------------*/}
+        {/* ====================== WEBSITES ======================= */}
         <h2 className="text-xl text-brand-gold">Websites</h2>
         {websites.map((website, index) => (
           <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-4">
@@ -356,7 +384,7 @@ export default function OnboardingPrivateDataPage() {
                 className="bg-neutral-800 border border-gray-700 text-gray-200"
               />
               <p className="text-xs text-gray-500">
-                Hint: Must be a valid URL including protocol (https://).
+                Hint: Must be a valid URL (include https://).
               </p>
             </div>
 
@@ -369,6 +397,9 @@ export default function OnboardingPrivateDataPage() {
                 className="accent-brand-gold"
               />
               <label>Private</label>
+              <p className="text-xs text-yellow-700">
+                Your Website will only be seen to followed users.
+              </p>
             </div>
 
             {index > 0 && (
@@ -389,14 +420,10 @@ export default function OnboardingPrivateDataPage() {
           Add Another Website
         </Button>
 
-        {/* ------------------------------------
-            SOCIAL MEDIA SECTION 
-        --------------------------------------*/}
+        {/* ================= SOCIAL MEDIA ACCOUNTS ============== */}
         <h2 className="text-xl text-brand-gold">Social Media Accounts</h2>
         {socialMediaAccounts.map((account, index) => (
           <div key={index} className="mb-4 border border-gray-700 p-4 rounded space-y-4">
-            
-            {/* SELECT PLATFORM */}
             <div className="space-y-1">
               <label className="text-sm text-gray-400">Platform</label>
               <Select
@@ -420,7 +447,6 @@ export default function OnboardingPrivateDataPage() {
               </Select>
             </div>
 
-            {/* URL / @USERNAME */}
             <div className="space-y-1">
               <label className="text-sm text-gray-400">Profile URL or @username</label>
               <Input
@@ -443,6 +469,9 @@ export default function OnboardingPrivateDataPage() {
                 className="accent-brand-gold"
               />
               <label>Private</label>
+              <p className="text-xs text-yellow-700">
+                Your Social Media will only be seen to followed users.
+              </p>
             </div>
 
             {index > 0 && (
@@ -463,9 +492,7 @@ export default function OnboardingPrivateDataPage() {
           Add Another Social Media
         </Button>
 
-        {/* ------------------------------------
-            SUBMIT BUTTON
-        --------------------------------------*/}
+        {/* ===================== SUBMIT BUTTON ==================== */}
         <Button
           className="bg-brand-gold text-black hover:brightness-110"
           onClick={handleSubmit}
