@@ -1,26 +1,57 @@
 // src/app/(auth)/register/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { registerUser, loginUser } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { setToken } from '@/lib/cookies'
 import { decodeToken } from '@/lib/jwt'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setCredentials } from '@/state/slices/authSlice'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Link from 'next/link'
+import { RootState } from '@/state/store'
 
 export default function RegisterPage() {
   console.log("Register...");
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const router = useRouter()
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (token) {
+      if (onBoardingStatus === 'FINISHED') {
+        router.push('/')
+        return
+      }
+      if (onBoardingStatus === 'LOCATION') {
+        router.push('/onboarding/location')
+        return
+      }
+      if (onBoardingStatus === 'MEDIA_UPLOADED') {
+        router.push('/onboarding/media')
+        return
+      }
+      if (onBoardingStatus === 'PRIVATE_CONTACT') {
+        router.push('/onboarding/private-data')
+        return
+      }
+      if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+        router.push('/onboarding/profile')
+        return
+      }
+      if (onBoardingStatus !== 'FINISHED') {
+        router.push('/onboarding/profile')
+        return
+      }
+    }
+  }, [token, onBoardingStatus, router])
 
   const handleRegister = async () => {
     try {

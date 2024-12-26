@@ -63,20 +63,10 @@ export default function OnboardingPrivateDataPage() {
   ])
 
   useEffect(() => {
-    // if (!token) {
-    //   router.push('/login')
-    //   return
-    // }
-    // if (onBoardingStatus === 'FINISHED') {
-    //   router.push('/')
-    //   return
-    // }
-    // if (onBoardingStatus === 'EMPTY') {
-    //   router.push('/onboarding/profile') 
-    //   return
-    // }
-    // We assume onBoardingStatus is at least PROFILE now.
-    console.log(token);
+    if (onBoardingStatus === 'FINISHED') {
+      router.push('/')
+      return
+    }
 
     async function fetchOptions() {
       const [fetchedSocialMedia, fetchedApps] = await Promise.all([

@@ -38,7 +38,7 @@ export interface CustomTinderCardRef {
 export type SwipeDirection = 'left' | 'right' | 'up' | 'down'
 
 export default function HomePage() {
-  const { token } = useSelector((state: RootState) => state.auth)
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
 
   // Filter & user data
@@ -65,7 +65,26 @@ export default function HomePage() {
   const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([])
 
   useEffect(() => {
-
+    if (onBoardingStatus === 'LOCATION') {
+      router.push('/onboarding/location') 
+      return
+    }
+    if (onBoardingStatus === 'MEDIA_UPLOADED') {
+      router.push('/onboarding/media') 
+      return
+    }
+    if (onBoardingStatus === 'PRIVATE_CONTACT') {
+      router.push('/onboarding/private-data') 
+      return
+    }
+    if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+      router.push('/onboarding/profile') 
+      return
+    }
+    if (onBoardingStatus !== 'FINISHED') {
+      router.push('/onboarding/profile') 
+      return
+    }
     // Load filter from cookies
     const loaded = loadFilters()
     setFilters(loaded)
