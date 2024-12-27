@@ -83,25 +83,27 @@ export default function HomePage() {
   // -------------------
   useEffect(() => {
     // Handle onboarding logic
-    if (onBoardingStatus === 'LOCATION') {
-      router.push('/onboarding/location')
-      return
-    }
-    if (onBoardingStatus === 'MEDIA_UPLOADED') {
-      router.push('/onboarding/media')
-      return
-    }
-    if (onBoardingStatus === 'PRIVATE_CONTACT') {
-      router.push('/onboarding/private-data')
-      return
-    }
-    if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
-      router.push('/onboarding/profile')
-      return
-    }
-    if (onBoardingStatus !== 'FINISHED') {
-      router.push('/onboarding/profile')
-      return
+    if (token) {
+      if (onBoardingStatus === 'LOCATION') {
+        router.push('/onboarding/location')
+        return
+      }
+      if (onBoardingStatus === 'MEDIA_UPLOADED') {
+        router.push('/onboarding/media')
+        return
+      }
+      if (onBoardingStatus === 'PRIVATE_CONTACT') {
+        router.push('/onboarding/private-data')
+        return
+      }
+      if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
+        router.push('/onboarding/profile')
+        return
+      }
+      if (onBoardingStatus !== 'FINISHED') {
+        router.push('/onboarding/profile')
+        return
+      }
     }
 
     // Load filters
@@ -278,27 +280,25 @@ export default function HomePage() {
   return (
     <div className="w-full h-screen bg-neutral-900 text-brand-white overflow-hidden">
       <div className="flex flex-col md:flex-row h-full">
-        
+
         {/* LEFT SIDE (desktop only) */}
         <div className="hidden md:flex md:flex-col w-1/3 h-full bg-neutral-800 border-r border-gray-700 p-4">
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
             <button
-              className={`px-4 py-2 rounded-md font-semibold transition-colors ${
-                activeTab === 'matches'
+              className={`px-4 py-2 rounded-md font-semibold transition-colors ${activeTab === 'matches'
                   ? 'bg-brand-gold text-black'
                   : 'text-gray-300 hover:bg-neutral-700'
-              }`}
+                }`}
               onClick={() => handleTabSwitch('matches')}
             >
               Matches
             </button>
             <button
-              className={`px-4 py-2 rounded-md font-semibold transition-colors ${
-                activeTab === 'chats'
+              className={`px-4 py-2 rounded-md font-semibold transition-colors ${activeTab === 'chats'
                   ? 'bg-brand-gold text-black'
                   : 'text-gray-300 hover:bg-neutral-700'
-              }`}
+                }`}
               onClick={() => handleTabSwitch('chats')}
             >
               Chats
