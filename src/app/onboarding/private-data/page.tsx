@@ -161,7 +161,11 @@ export default function OnboardingPrivateDataPage() {
     setContactNumbers((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const updateContactNumberField = (index: number, field: keyof ContactNumberForm, value: any) => {
+  const updateContactNumberField = (
+    index: number,
+    field: keyof ContactNumberForm,
+    value: any
+  ) => {
     setContactError('')
     setContactNumbers((prev) =>
       prev.map((cn, i) => (i === index ? { ...cn, [field]: value } : cn))
@@ -280,13 +284,20 @@ export default function OnboardingPrivateDataPage() {
               <PhoneInput
                 country={defaultCountry}   // <-- auto-detected or fallback
                 value={contact.number}
-                onChange={(phone) => {
+                /*
+                  The second argument to onChange includes 'dialCode' (the numeric code like '91' or '1'),
+                  which we store in contact.countryCode.
+                */
+                onChange={(phone, data:any) => {
                   updateContactNumberField(index, 'number', phone)
+                  updateContactNumberField(index, 'countryCode', data.dialCode || '')
                 }}
-                // If you also want to track the 2-letter country code:
-                // onCountryChange={(countryCode) => {
-                //   updateContactNumberField(index, 'countryCode', countryCode)
-                // }}
+                // If you also want to separately track ISO2 code in state, you could use onCountryChange:
+                /*
+                onCountryChange={(countryData) => {
+                  updateContactNumberField(index, 'countryCode', countryData.dialCode)
+                }}
+                */
                 // ------ STYLING for Dark Theme ------
                 containerStyle={{ backgroundColor: 'transparent' }}
                 inputStyle={{
