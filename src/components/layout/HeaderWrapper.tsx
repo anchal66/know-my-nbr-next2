@@ -1,3 +1,4 @@
+// src/components/layout/HeaderWrapper.tsx
 'use client'
 
 import { useSelector } from 'react-redux'

@@ -3,6 +3,32 @@
 import api from '@/lib/api'
 import qs from 'qs'
 
+export interface PaginatedResponse<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  size: number
+  number: number
+  first: boolean
+  last: boolean
+}
+
+export interface MatchItem {
+  matchId: string
+  userId: string
+  name: string
+  bio: string
+  matchedAt: string
+  media: {
+    id: string
+    type: string
+    url: string
+    isVerified: boolean
+    isWatermarked: boolean
+    orderNo: number
+  }[]
+}
+
 export interface OptionItem {
   id: number
   name: string
@@ -71,5 +97,16 @@ export async function fetchSwipableUsers(params: {
 export async function recordSwipe(action: 'LIKE' | 'DISLIKE', toUserId: string): Promise<any> {
   const payload = { action, toUserId }
   const { data } = await api.post('/api/v1/swipes', payload)
+  return data
+}
+
+export async function fetchMatches(
+  page = 0,
+  size = 20
+): Promise<PaginatedResponse<MatchItem>> {
+  const { data } = await api.get('/api/v1/matches', {
+    params: { page, size },
+    paramsSerializer: (p) => qs.stringify(p, { arrayFormat: 'repeat' }),
+  })
   return data
 }

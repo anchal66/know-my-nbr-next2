@@ -18,6 +18,11 @@ import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
 import Image from 'next/image'
 import { removeToken } from '@/lib/cookies'
+import { Menu } from '@headlessui/react'
+import { FaChevronDown } from 'react-icons/fa'
+
+// Import your new BottomNav component
+import { BottomNav } from './BottomNav'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -25,20 +30,19 @@ export function Header() {
   const { username, token } = useSelector((state: RootState) => state.auth)
   const userDetail = useSelector((state: RootState) => state.user.detail)
   const { balance } = useSelector((state: RootState) => state.wallet)
-
-  const [showAddFundsModal, setShowAddFundsModal] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [selectedCity, setSelectedCity] = useState<string>('Unknown City')
-
   const isLoggedIn = !!token && !!username
 
+  const [showAddFundsModal, setShowAddFundsModal] = useState(false)
+  const [selectedCity, setSelectedCity] = useState<string>('Unknown City')
+
+  // logout
   function handleLogout() {
     removeToken()
     dispatch(logout())
     window.location.href = '/login'
   }
 
-  // Fetch wallet if logged in, and user details
+  // fetch user data
   useEffect(() => {
     if (isLoggedIn) {
       dispatch(fetchWalletBalance())
@@ -55,18 +59,17 @@ export function Header() {
     }
   }
 
-  // Derive active city + other cities
+  // derive city
   useEffect(() => {
     if (!isLoggedIn || !userDetail || userDetail.locations.length === 0) {
       setSelectedCity('Unknown City')
       return
     }
     const activeLoc = userDetail.locations.find(loc => loc.isActive)
-    const activeName = activeLoc ? activeLoc.city.name : 'Unknown City'
-    setSelectedCity(activeName)
+    setSelectedCity(activeLoc ? activeLoc.city.name : 'Unknown City')
   }, [userDetail, isLoggedIn])
 
-  // Other city list
+  // other cities
   const otherCities: string[] = []
   if (isLoggedIn && userDetail && userDetail.locations.length > 0) {
     otherCities.push(
@@ -76,203 +79,199 @@ export function Header() {
     )
   }
 
-  function toggleMobileMenu() {
-    setMobileMenuOpen(prev => !prev)
-  }
-
-  // Handle city selection (only if you want to actually switch city in Redux or call some API)
   function handleCityChange(value: string) {
     setSelectedCity(value)
-    // If you want to set city as active in backend or Redux, do so here...
+    // If you want to set city in backend, do so here
   }
 
   return (
-    <header
-      className="
-        w-full 
-        border-b 
-        bg-background 
-        text-foreground 
-        dark:bg-background 
-        dark:text-foreground 
-        px-4 
-        py-2 
-        flex 
-        items-center 
-        justify-between 
-        relative 
-        z-20
-      "
-    >
-      {/* Left side: Logo + Desktop nav */}
-      <div className="flex items-center space-x-4">
-        <Link href="/">
+    <>
+      {/* TOP HEADER for all screens */}
+      <header className="w-full h-16 bg-neutral-800 border-b border-gray-700 text-brand-white flex items-center justify-between px-4">
+        {/* Left: Logo */}
+        <Link href="/" className="flex items-center">
           <Image
             src="/logo.png"
             alt="Logo"
-            width={80}
-            height={40}
+            width={120}
+            height={60}
             priority
             className="shrink-0"
           />
         </Link>
 
-        {/* Desktop Nav (inline with logo) */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/">Home</Link>
-          {isLoggedIn && <Link href={`/${username}`}>My Profile</Link>}
-          {isLoggedIn && <Link href="/nbr-direct">NBR Direct</Link>}
-          {isLoggedIn && <Link href="/messages">Messages</Link>}
-        </nav>
-      </div>
-
-      {/* Right side: City dropdown, Wallet, Logout (desktop only), Hamburger */}
-      <div className="flex items-center space-x-4">
-        {isLoggedIn ? (
-          <>
-            {/* City Dropdown */}
-            <Select
-              value={selectedCity}
-              onValueChange={handleCityChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="City" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={selectedCity}>
-                  {selectedCity}
-                </SelectItem>
-                {otherCities.map((city, idx) => (
-                  <SelectItem key={idx} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Wallet */}
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold">
-                {'\u20B9'} {balance.toFixed(2)}
-              </span>
-              <button
-                onClick={() => setShowAddFundsModal(true)}
-                className="rounded-full border p-1 hover:bg-gray-100"
-              >
-                <svg
-                  className="h-5 w-5 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Logout (desktop only) */}
-            <button
-              className="hidden md:block rounded border p-2 bg-red-500 text-white hover:bg-red-600"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <div className="text-gray-500 italic">Not Logged In</div>
-        )}
-
-        {/* Hamburger (mobile only) */}
-        <button
-          className="md:hidden"
-          onClick={toggleMobileMenu}
-          aria-label="Toggle mobile menu"
-        >
-          <svg
-            className="h-6 w-6 text-gray-700 dark:text-gray-200"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile nav (absolute overlay) */}
-      {mobileMenuOpen && (
-        <div
-          className="
-            md:hidden 
-            absolute 
-            top-full 
-            left-0 
-            w-full 
-            bg-black/75 
-            text-white 
-            py-3 
-            shadow-lg
-            z-50
-          "
-        >
-          <nav className="flex flex-col space-y-4 px-4">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="hover:underline"
-            >
-              Home
+        {/* Desktop Nav (md+) */}
+        <nav className="hidden md:flex items-center space-x-6 font-semibold text-sm">
+          <Link href="/" className="hover:underline">
+            Home
+          </Link>
+          {isLoggedIn && (
+            <Link href={`/${username}`} className="hover:underline">
+              My Profile
             </Link>
-            {isLoggedIn && (
-              <>
-                <Link
-                  href={`/${username}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="hover:underline"
-                >
-                  My Profile
-                </Link>
-                <Link
-                  href="/nbr-direct"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="hover:underline"
-                >
-                  NBR Direct
-                </Link>
-                <Link
-                  href="/messages"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="hover:underline"
-                >
-                  Messages
-                </Link>
-                {/* Logout (mobile only) */}
+          )}
+          {isLoggedIn && (
+            <Link href="/nbr-direct" className="hover:underline">
+              NBR Direct
+            </Link>
+          )}
+          {isLoggedIn && (
+            <Link href="/messages" className="hover:underline">
+              Messages
+            </Link>
+          )}
+          {/* More dropdown */}
+          {isLoggedIn && (
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button className="flex items-center gap-1 hover:underline">
+                More <FaChevronDown className="text-xs" />
+              </Menu.Button>
+              <Menu.Items
+                className="
+                  absolute mt-2 w-44 origin-top-right right-0
+                  bg-neutral-700 text-white
+                  rounded shadow-lg focus:outline-none z-50
+                "
+              >
+                <div className="py-1 text-sm">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-wallet"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        My Wallet
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-followers"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        My Followers
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-following"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        Users I Follow
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-matches"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        My Matches
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-addresses"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        My Addresses
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        href="/my-reviews"
+                        className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
+                      >
+                        My Reviews
+                      </Link>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={handleLogout}
+                        className={`block w-full text-left px-4 py-2 ${
+                          active ? 'bg-neutral-600' : ''
+                        }`}
+                      >
+                        Logout
+                      </button>
+                    )}
+                  </Menu.Item>
+                </div>
+              </Menu.Items>
+            </Menu>
+          )}
+        </nav>
+
+        {/* Right side: city + wallet or "Not logged in" */}
+        <div className="flex items-center space-x-3">
+          {isLoggedIn ? (
+            <>
+              {/* City */}
+              <Select
+                value={selectedCity}
+                onValueChange={handleCityChange}
+              >
+                <SelectTrigger className="w-[130px] text-sm border border-gray-600 bg-neutral-700">
+                  <SelectValue placeholder="City" />
+                </SelectTrigger>
+                <SelectContent className="bg-neutral-700 text-white">
+                  <SelectItem value={selectedCity}>{selectedCity}</SelectItem>
+                  {otherCities.map((city, idx) => (
+                    <SelectItem key={idx} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Wallet */}
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="font-semibold">{'\u20B9'} {balance.toFixed(2)}</span>
                 <button
-                  onClick={handleLogout}
-                  className="border p-2 rounded bg-red-500 text-white text-left"
+                  onClick={() => setShowAddFundsModal(true)}
+                  className="rounded-full border border-gray-600 p-1 hover:bg-neutral-700"
+                  title="Add Funds"
                 >
-                  Logout
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
                 </button>
-              </>
-            )}
-          </nav>
+              </div>
+            </>
+          ) : (
+            <div className="text-gray-400 italic text-sm">
+              Not Logged In
+            </div>
+          )}
         </div>
-      )}
+      </header>
+
+      {/* BottomNav on small screens */}
+      <BottomNav
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onLogout={handleLogout}
+      />
 
       {/* Add Funds Modal */}
       {showAddFundsModal && (
         <HeaderAddFundsModal onClose={() => setShowAddFundsModal(false)} />
       )}
-    </header>
+    </>
   )
 }
