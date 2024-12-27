@@ -66,19 +66,16 @@ export default function HomePage() {
 
   // Matches list
   const [matchPage, setMatchPage] = useState<any>(null)
-  const [matches, setMatches] = useState<any[]>([]) // store content array
+  const [matches, setMatches] = useState<any[]>([])
   // Chats list
   const [chatPage, setChatPage] = useState<any>(null)
   const [chats, setChats] = useState<any[]>([])
 
-  // For controlling loading states, pagination, etc.
+  // Loading states
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [loadingChats, setLoadingChats] = useState(false)
 
-  /**
-   * We'll create a ref for each TinderCard so we can programmatically swipe them
-   * when the user clicks Like/Nope.
-   */
+  // TinderCard refs
   const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([])
 
   // -------------------
@@ -107,11 +104,11 @@ export default function HomePage() {
       return
     }
 
-    // Load filter from cookies
+    // Load filters
     const loaded = loadFilters()
     setFilters(loaded)
 
-    // If exactly default => open filter modal on first time
+    // If filters are exactly default => open filter modal on first time
     if (JSON.stringify(loaded) === JSON.stringify(defaultFilters)) {
       setShowFilterModal(true)
     }
@@ -152,12 +149,16 @@ export default function HomePage() {
         page: 0,
         size: 10
       })
-      setCards(data)
-      setCurrentIndex(data.length - 1)
+      setCards(Array.isArray(data) ? data : [])
+      setCurrentIndex((data && data.length) ? data.length - 1 : -1)
+
       // Create references for each card
-      childRefs.current = data.map(() => React.createRef<CustomTinderCardRef>())
+      if (Array.isArray(data)) {
+        childRefs.current = data.map(() => React.createRef<CustomTinderCardRef>())
+      }
     } catch (err) {
       console.error('Failed to fetch swipable users:', err)
+      setCards([])
     }
   }
 
@@ -169,12 +170,11 @@ export default function HomePage() {
       setMatches(Array.isArray(data?.content) ? data.content : [])
     } catch (error) {
       console.error('Error fetching matches:', error)
-      setMatches([])  // fallback to empty array
+      setMatches([])
     } finally {
       setLoadingMatches(false)
     }
   }
-  
 
   async function fetchInitialChats(page = 0) {
     try {
@@ -184,11 +184,11 @@ export default function HomePage() {
       setChats(Array.isArray(data?.content) ? data.content : [])
     } catch (error) {
       console.error('Error fetching chats:', error)
-      setChats([])  // fallback
+      setChats([])
     } finally {
       setLoadingChats(false)
     }
-  }  
+  }
 
   // -------------------
   //  HANDLERS
@@ -277,9 +277,9 @@ export default function HomePage() {
   // -------------------
   return (
     <div className="w-full h-screen bg-neutral-900 text-brand-white overflow-hidden">
-      {/* Split layout for md+ screens */}
       <div className="flex flex-col md:flex-row h-full">
-        {/* LEFT SIDE (hidden on mobile) */}
+        
+        {/* LEFT SIDE (desktop only) */}
         <div className="hidden md:flex md:flex-col w-1/3 h-full bg-neutral-800 border-r border-gray-700 p-4">
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
@@ -353,7 +353,9 @@ export default function HomePage() {
                       className="flex flex-col mb-3 p-2 rounded hover:bg-neutral-700 cursor-pointer"
                       onClick={() => handleNavigateToMessages(c.matchId)}
                     >
-                      <p className="font-semibold text-brand-white">{c.name}</p>
+                      <p className="font-semibold text-brand-white">
+                        {c.name}
+                      </p>
                       {lastMsg ? (
                         <span className="text-xs text-gray-400 truncate">
                           {lastMsg.content}
@@ -370,7 +372,7 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Pagination (for demonstration) */}
+          {/* Pagination */}
           <div className="mt-4 flex gap-2">
             {activeTab === 'matches' ? (
               <>
@@ -415,21 +417,22 @@ export default function HomePage() {
         </div>
 
         {/* RIGHT SIDE: SWIPE AREA */}
-        <div className="flex-1 flex flex-col relative">
-          {/* Filter gear button (absolute top-right) */}
-          <div className="absolute top-4 right-4 z-10">
-            <button
-              onClick={handleOpenFilters}
-              className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg transition-colors hover:bg-neutral-700"
-            >
-              <FaSlidersH size={20} className="text-gray-300" />
-            </button>
-          </div>
+        <div className="flex-1 flex flex-col items-center justify-center relative">
+          {/* Card Container */}
+          <div className="relative w-full max-w-sm h-[560px] flex items-center justify-center">
+            {/* Filter gear button OVER the card, top-right */}
+            <div className="absolute top-2 right-2 z-10">
+              <button
+                onClick={handleOpenFilters}
+                className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg transition-colors hover:bg-neutral-700"
+              >
+                <FaSlidersH size={20} className="text-gray-300" />
+              </button>
+            </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center px-2 py-4 relative">
+            {/* If no cards => show "No Users Found" */}
             {cards.length === 0 ? (
-              // No cards
-              <div className="text-center bg-neutral-800 border border-gray-700 p-6 rounded shadow-md max-w-sm w-full">
+              <div className="text-center bg-neutral-800 border border-gray-700 p-6 rounded shadow-md w-full h-full flex flex-col justify-center items-center">
                 <h2 className="text-xl font-bold text-brand-gold mb-2">
                   No Users Found
                 </h2>
@@ -445,16 +448,14 @@ export default function HomePage() {
                 </Button>
               </div>
             ) : (
-              // Cards container
-              <div className="relative w-full max-w-sm h-[520px]">
+              // Tinder Cards
+              <div className="relative w-full h-full">
                 {cards.map((user, index) => (
                   <TinderCard
                     ref={childRefs.current[index]}
                     key={`${user.id}-${index}`}
                     className="absolute w-full h-full"
-                    onSwipe={(dir) =>
-                      handleSwipe(dir as SwipeDirection, user, index)
-                    }
+                    onSwipe={(dir) => handleSwipe(dir as SwipeDirection, user, index)}
                     preventSwipe={['up', 'down']}
                   >
                     <SwipeCard user={user} />
@@ -462,25 +463,25 @@ export default function HomePage() {
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Bottom LIKE/NOPE buttons, slightly overlaid on the card */}
-          {cards.length > 0 && (
-            <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-8">
-              <button
-                onClick={() => swipe('left')}
-                className="bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-red text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
-              >
-                NOPE
-              </button>
-              <button
-                onClick={() => swipe('right')}
-                className="bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-gold text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
-              >
-                LIKE
-              </button>
-            </div>
-          )}
+            {/* Bottom LIKE/NOPE buttons (over info area) */}
+            {cards.length > 0 && (
+              <div className="absolute bottom-16 left-0 right-0 flex justify-center items-center gap-5">
+                <button
+                  onClick={() => swipe('left')}
+                  className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-red text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
+                >
+                  NOPE
+                </button>
+                <button
+                  onClick={() => swipe('right')}
+                  className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-gold text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
+                >
+                  LIKE
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -519,7 +520,7 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
   }
 
   const handleNameClick = () => {
-    // Navigate to /{username}, or any profile page logic
+    // Navigate to /{username}
     router.push(`/${user.name}`)
   }
 
@@ -542,7 +543,7 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
       </div>
 
       {/* Info */}
-      <div className="p-3">
+      <div className="p-3 relative">
         <h3
           className="text-base font-semibold cursor-pointer hover:underline truncate"
           onClick={handleNameClick}
