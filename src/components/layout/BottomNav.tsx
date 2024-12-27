@@ -123,7 +123,7 @@ export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
                   onClick={() => setShowMore(false)}
                   className="block px-2 py-1 hover:bg-neutral-600 rounded"
                 >
-                  Users I Follow
+                  Following
                 </Link>
               </li>
               <li>

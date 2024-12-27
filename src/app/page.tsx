@@ -166,26 +166,29 @@ export default function HomePage() {
       setLoadingMatches(true)
       const data = await fetchMatches(page, 20)
       setMatchPage(data)
-      setMatches(data.content)
+      setMatches(Array.isArray(data?.content) ? data.content : [])
     } catch (error) {
       console.error('Error fetching matches:', error)
+      setMatches([])  // fallback to empty array
     } finally {
       setLoadingMatches(false)
     }
   }
+  
 
   async function fetchInitialChats(page = 0) {
     try {
       setLoadingChats(true)
       const data = await getConversations(page, 20)
       setChatPage(data)
-      setChats(data.content)
+      setChats(Array.isArray(data?.content) ? data.content : [])
     } catch (error) {
       console.error('Error fetching chats:', error)
+      setChats([])  // fallback
     } finally {
       setLoadingChats(false)
     }
-  }
+  }  
 
   // -------------------
   //  HANDLERS

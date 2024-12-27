@@ -160,7 +160,7 @@ export function Header() {
                         href="/my-following"
                         className={`block px-4 py-2 ${active ? 'bg-neutral-600' : ''}`}
                       >
-                        Users I Follow
+                        Following
                       </Link>
                     )}
                   </Menu.Item>
