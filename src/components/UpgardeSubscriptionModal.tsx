@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { getSubscriptionPrice, subscribeToPlan, Subscription } from '@/lib/subscription'
+import { fetchWalletBalance } from '@/state/slices/walletSlice'
+import { AppDispatch } from '@/state/store'
+import { useDispatch } from 'react-redux'
 
 interface UpgradeSubscriptionModalProps {
   cityId: number
@@ -13,6 +16,7 @@ export default function UpgradeSubscriptionModal({
   onClose,
   onSubscribed,
 }: UpgradeSubscriptionModalProps) {
+  const dispatch = useDispatch<AppDispatch>()
   const [loading, setLoading] = useState(false)
   const [subscriptionType, setSubscriptionType] = useState('VIP') // Default type
   const [price, setPrice] = useState<number | null>(null)
@@ -39,6 +43,7 @@ export default function UpgradeSubscriptionModal({
       setLoading(true)
       const subscription = await subscribeToPlan(cityId, subscriptionType)
       onSubscribed(subscription)
+      await dispatch(fetchWalletBalance())
       onClose()
     } catch (err: any) {
       setError(err.response?.data?.message || 'Subscription failed')
