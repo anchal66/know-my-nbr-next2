@@ -159,7 +159,7 @@ export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
                     onLogout()
                     setShowMore(false)
                   }}
-                  className="w-full text-left px-2 py-1 hover:bg-neutral-600 rounded"
+                  className="w-full text-red-500 text-left px-2 py-1 hover:bg-neutral-600 rounded"
                 >
                   Logout
                 </button>
