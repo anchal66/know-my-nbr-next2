@@ -173,8 +173,11 @@ export default function NbrDirectPage() {
         <div className="md:hidden">
           {/* ============ LINE 1: Search Box ============ */}
           <div className="relative mb-2">
+            <label className="block font-medium text-sm text-gray-300 mb-1" htmlFor="city-search">
+              Type your city
+            </label>
             <Input
-              placeholder="Search city..."
+              placeholder="Type at least 2 chars..."
               value={citySearchTerm}
               onChange={(e) => setCitySearchTerm(e.target.value)}
               className="bg-neutral-800 border border-gray-700 text-gray-200 w-full"
@@ -192,7 +195,6 @@ export default function NbrDirectPage() {
                 ))}
               </div>
             )}
-
             {selectedCityId && (
               <p className="text-green-400 text-sm mt-1">
                 Selected City: {selectedCityName}
@@ -234,28 +236,34 @@ export default function NbrDirectPage() {
           =======================
         */}
         <div className="hidden md:block">
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-4">
             {/* Search Box */}
-            <div className="relative flex-1">
-              <Input
-                placeholder="Search city..."
-                value={citySearchTerm}
-                onChange={(e) => setCitySearchTerm(e.target.value)}
-                className="bg-neutral-800 border border-gray-700 text-gray-200 w-full"
-              />
-              {citySuggestions.length > 0 && (
-                <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-48 overflow-auto">
-                  {citySuggestions.map((c) => (
-                    <div
-                      key={c.cityId}
-                      className="p-2 hover:bg-neutral-700 cursor-pointer"
-                      onClick={() => handlePickCity(c.cityId, c.label)}
-                    >
-                      {c.label}
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="flex-1">
+              <label className="block font-medium text-sm text-gray-300 mb-1" htmlFor="city-search">
+                Type your city
+              </label>
+              <div className="relative">
+                <Input
+                  id="city-search"
+                  placeholder="Type at least 2 chars..."
+                  value={citySearchTerm}
+                  onChange={(e) => setCitySearchTerm(e.target.value)}
+                  className="bg-neutral-800 border border-gray-700 text-gray-200 w-full"
+                />
+                {citySuggestions.length > 0 && (
+                  <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-48 overflow-auto">
+                    {citySuggestions.map((c) => (
+                      <div
+                        key={c.cityId}
+                        className="p-2 hover:bg-neutral-700 cursor-pointer"
+                        onClick={() => handlePickCity(c.cityId, c.label)}
+                      >
+                        {c.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               {selectedCityId && (
                 <p className="text-green-400 text-sm mt-1">
                   Selected City: {selectedCityName}
@@ -264,30 +272,38 @@ export default function NbrDirectPage() {
             </div>
 
             {/* Gender Dropdown */}
-            <select
-              className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
-              value={selectedGenderId ?? ''}
-              onChange={(e) => {
-                const val = e.target.value
-                setSelectedGenderId(val ? Number(val) : null)
-              }}
-            >
-              <option value="">{'Gender'}</option>
-              {genders.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center">
+              <label className="sr-only" htmlFor="gender-select">
+                Gender
+              </label>
+              <select
+                id="gender-select"
+                className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
+                value={selectedGenderId ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setSelectedGenderId(val ? Number(val) : null)
+                }}
+              >
+                <option value="">{'Gender'}</option>
+                {genders.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Filter Icon Button */}
-            <Button
-              variant="secondary"
-              className="border-gray-700 text-gray-200 hover:bg-neutral-700 flex items-center justify-center px-3 py-2"
-              onClick={() => setShowFilterModal(true)}
-            >
-              <FaFilter className="text-lg" />
-            </Button>
+            <div className="flex items-center">
+              <Button
+                variant="secondary"
+                className="border-gray-700 text-gray-200 hover:bg-neutral-700 flex items-center justify-center px-3 py-2"
+                onClick={() => setShowFilterModal(true)}
+              >
+                <FaFilter className="text-lg" />
+              </Button>
+            </div>
           </div>
         </div>
 
