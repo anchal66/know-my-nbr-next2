@@ -1,18 +1,26 @@
-// src/app/nbr-direct/page.tsx
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import FilterModal from '../../components/FilterModal'
+import FilterModal from '@/components/FilterModal'
 
-import { searchUsers, searchCitiesWithCounts, getGenders } from '@/lib/nbrDirect'
+import {
+  searchUsers,
+  searchCitiesWithCounts,
+  getGenders
+} from '@/lib/nbrDirect'
+
 import { UserDetailResponse } from '@/lib/user'
+import UserCardVIP from '@/components/nbr-direct/UserCardVIP'
+import UserCardNormal from '@/components/nbr-direct/UserCardNormal'
+import UserCardFeatured from '@/components/nbr-direct/UserCardFeatured'
+
+// Example filter icon
+import { FaFilter } from 'react-icons/fa'
 
 interface FilterData {
   orientationIds?: number[]
@@ -28,7 +36,7 @@ export default function NbrDirectPage() {
     (state: RootState) => state.user.detail
   )
 
-  // City search
+  // =================== State ===================
   const [citySearchTerm, setCitySearchTerm] = useState('')
   const [citySuggestions, setCitySuggestions] = useState<
     { cityId: number; label: string }[]
@@ -36,20 +44,19 @@ export default function NbrDirectPage() {
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null)
   const [selectedCityName, setSelectedCityName] = useState<string>('')
 
-  // Gender dropdown
   const [genders, setGenders] = useState<{ id: number; name: string }[]>([])
   const [selectedGenderId, setSelectedGenderId] = useState<number | null>(null)
 
-  // All other filters in a modal
   const [modalFilters, setModalFilters] = useState<FilterData>({})
   const [showFilterModal, setShowFilterModal] = useState(false)
 
-  // Search result states
   const [userList, setUserList] = useState<any[]>([])
   const [totalUsers, setTotalUsers] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  /** ============= 1) Initialize city from user’s location if present ============= */
+  // =================== Effects ===================
+
+  /** 1) Initialize city from user’s location if present */
   useEffect(() => {
     if (userDetail && userDetail.locations.length > 0) {
       const activeLoc = userDetail.locations.find((loc) => loc.isActive)
@@ -60,20 +67,20 @@ export default function NbrDirectPage() {
     }
   }, [userDetail])
 
-  /** ============= 2) Load Genders for the dropdown ============= */
+  /** 2) Load Genders (for dropdown) */
   useEffect(() => {
     getGenders()
       .then((data) => setGenders(data))
       .catch((err) => console.error('Error loading genders:', err))
   }, [])
 
-  /** ============= 3) Type-ahead for city search ============= */
+  /** 3) Type-ahead for city search */
   useEffect(() => {
-    // Only search if 2+ chars
     if (citySearchTerm.length < 2) {
       setCitySuggestions([])
       return
     }
+
     let isCancelled = false
     searchCitiesWithCounts(citySearchTerm)
       .then((res: any) => {
@@ -92,7 +99,7 @@ export default function NbrDirectPage() {
     }
   }, [citySearchTerm])
 
-  /** ============= 4) Whenever any filter changes => do search ============= */
+  /** 4) Whenever cityId or any filter changes => do search */
   useEffect(() => {
     if (!selectedCityId) {
       setUserList([])
@@ -102,7 +109,6 @@ export default function NbrDirectPage() {
     async function doSearch() {
       setLoading(true)
       try {
-        // Combine all filters
         const resp = await searchUsers({
           cityId: selectedCityId!,
           genderIds: selectedGenderId ? [selectedGenderId] : undefined,
@@ -135,7 +141,9 @@ export default function NbrDirectPage() {
     modalFilters.name,
   ])
 
-  /** ============= 5) Handler when user picks a city from suggestions ============= */
+  // =================== Handlers ===================
+
+  /** 5) When user picks a city from suggestions */
   function handlePickCity(cityId: number, label: string) {
     setSelectedCityId(cityId)
     setSelectedCityName(label)
@@ -143,30 +151,33 @@ export default function NbrDirectPage() {
     setCitySuggestions([])
   }
 
-  /** ============= 6) Handler for the FilterModal's “Apply” ============= */
+  /** 6) Handler for FilterModal “Apply” */
   function handleApplyFilters(newFilters: FilterData) {
     setModalFilters(newFilters)
     setShowFilterModal(false)
   }
 
-  // Render
+  // =================== Render ===================
+
   return (
     <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
       <div className="max-w-3xl mx-auto space-y-4">
+        {/* Page Title */}
         <h1 className="text-2xl font-semibold text-brand-gold">NBR Direct</h1>
 
-        {/* City + Gender on page */}
-        <div className="space-y-4">
-          {/* City search */}
-          <div className="relative">
-            <label className="block font-medium mb-1 text-sm text-gray-300">
-              Type your city
-            </label>
+        {/**
+          =======================
+          MOBILE VIEW (<md)
+          =======================
+        */}
+        <div className="md:hidden">
+          {/* ============ LINE 1: Search Box ============ */}
+          <div className="relative mb-2">
             <Input
-              placeholder="Type at least 2 chars..."
+              placeholder="Search city..."
               value={citySearchTerm}
               onChange={(e) => setCitySearchTerm(e.target.value)}
-              className="bg-neutral-800 border border-gray-700 text-gray-200"
+              className="bg-neutral-800 border border-gray-700 text-gray-200 w-full"
             />
             {citySuggestions.length > 0 && (
               <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-48 overflow-auto">
@@ -181,6 +192,7 @@ export default function NbrDirectPage() {
                 ))}
               </div>
             )}
+
             {selectedCityId && (
               <p className="text-green-400 text-sm mt-1">
                 Selected City: {selectedCityName}
@@ -188,41 +200,102 @@ export default function NbrDirectPage() {
             )}
           </div>
 
-          {/* Gender dropdown */}
-          <div>
-            <label className="block font-medium mb-1 text-sm text-gray-300">
-              Gender
-            </label>
-            <div className="inline-block">
-              <select
-                className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
-                value={selectedGenderId ?? ''}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setSelectedGenderId(val ? Number(val) : null)
-                }}
-              >
-                <option value="">Any</option>
-                {genders.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* ============ LINE 2: Gender + Filter Button ============ */}
+          <div className="flex items-center gap-2">
+            <select
+              className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
+              value={selectedGenderId ?? ''}
+              onChange={(e) => {
+                const val = e.target.value
+                setSelectedGenderId(val ? Number(val) : null)
+              }}
+            >
+              <option value="">{'Gender'}</option>
+              {genders.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+
+            <Button
+              variant="secondary"
+              className="border-gray-700 text-gray-200 hover:bg-neutral-700 flex items-center justify-center px-3 py-2"
+              onClick={() => setShowFilterModal(true)}
+            >
+              <FaFilter className="text-lg" />
+            </Button>
           </div>
         </div>
 
-        {/* Filter button */}
-        <Button
-          variant="secondary"
-          className="border-gray-700 text-gray-200 hover:bg-neutral-700"
-          onClick={() => setShowFilterModal(true)}
-        >
-          Advanced Filters
-        </Button>
+        {/**
+          =======================
+          DESKTOP/WIDE VIEW (md+)
+          =======================
+        */}
+        <div className="hidden md:block">
+          <div className="flex items-end gap-2">
+            {/* Search Box */}
+            <div className="relative flex-1">
+              <Input
+                placeholder="Search city..."
+                value={citySearchTerm}
+                onChange={(e) => setCitySearchTerm(e.target.value)}
+                className="bg-neutral-800 border border-gray-700 text-gray-200 w-full"
+              />
+              {citySuggestions.length > 0 && (
+                <div className="absolute z-10 top-full left-0 w-full bg-neutral-800 border border-gray-700 shadow-md max-h-48 overflow-auto">
+                  {citySuggestions.map((c) => (
+                    <div
+                      key={c.cityId}
+                      className="p-2 hover:bg-neutral-700 cursor-pointer"
+                      onClick={() => handlePickCity(c.cityId, c.label)}
+                    >
+                      {c.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedCityId && (
+                <p className="text-green-400 text-sm mt-1">
+                  Selected City: {selectedCityName}
+                </p>
+              )}
+            </div>
 
-        {/* Display results */}
+            {/* Gender Dropdown */}
+            <select
+              className="border border-gray-700 bg-neutral-800 text-gray-200 rounded px-3 py-2"
+              value={selectedGenderId ?? ''}
+              onChange={(e) => {
+                const val = e.target.value
+                setSelectedGenderId(val ? Number(val) : null)
+              }}
+            >
+              <option value="">{'Gender'}</option>
+              {genders.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Filter Icon Button */}
+            <Button
+              variant="secondary"
+              className="border-gray-700 text-gray-200 hover:bg-neutral-700 flex items-center justify-center px-3 py-2"
+              onClick={() => setShowFilterModal(true)}
+            >
+              <FaFilter className="text-lg" />
+            </Button>
+          </div>
+        </div>
+
+        {/* 
+          ========================
+          SEARCH RESULTS / LIST
+          ========================
+        */}
         <div className="mt-4">
           {loading ? (
             <p className="text-gray-400">Loading results...</p>
@@ -234,44 +307,51 @@ export default function NbrDirectPage() {
             <p className="text-gray-400">No users found</p>
           ) : (
             <ul className="space-y-2 mt-2">
-              {userList.map((user) => (
-                <li
-                  key={user.userId}
-                  className="border border-gray-700 p-2 rounded flex items-center space-x-4 bg-neutral-800"
-                >
-                  <div className="w-16 h-16 relative rounded overflow-hidden">
-                    {user.media && user.media.length > 0 ? (
-                      <Image
-                        src={
-                          user.media.find((m: any) => m.orderNo === 1)?.url ||
-                          user.media[0].url
-                        }
-                        alt={`${user.name}'s profile`}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-neutral-700 flex items-center justify-center text-gray-300">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 text-gray-200">
-                    <Link
-                      href={`/${user.username}`}
-                      className="font-semibold text-brand-gold hover:underline"
-                    >
-                      {user.name} (@{user.username})
-                    </Link>
-                    <p>Age: {user.age}</p>
-                    <p>
-                      Gender: {user.gender.name} | Orientation:{' '}
-                      {user.orientation.name}
-                    </p>
-                    <p>Nationality: {user.nationality.name}</p>
-                  </div>
-                </li>
-              ))}
+              {userList.map((user) => {
+                // Check if user is VIP
+                if (user.isVIP) {
+                  return (
+                    <UserCardVIP
+                      key={user.userId}
+                      user={{
+                        ...user,
+                        hearts: 228,
+                        comments: 38,
+                        followers: 500,
+                        matches: 30
+                      }}
+                    />
+                  )
+                }
+                // Check if user is Featured
+                if (user.isFeatured) {
+                  return (
+                    <UserCardFeatured
+                      key={user.userId}
+                      user={{
+                        ...user,
+                        hearts: 150,
+                        comments: 25,
+                        followers: 250,
+                        matches: 20
+                      }}
+                    />
+                  )
+                }
+                // Otherwise normal
+                return (
+                  <UserCardNormal
+                    key={user.userId}
+                    user={{
+                      ...user,
+                      hearts: 80,
+                      comments: 12,
+                      followers: 90,
+                      matches: 8
+                    }}
+                  />
+                )
+              })}
             </ul>
           )}
         </div>
