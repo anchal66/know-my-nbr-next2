@@ -47,9 +47,9 @@ export default function UserCardVIP({ user }: { user: UserVIP }) {
     const imagesToShow = user.media.slice(0, 3)
 
     return (
-        <div className="relative border-2 border-yellow-400 p-4 rounded-lg bg-neutral-800 flex flex-col md:flex-row">
+        <li className="relative border-2 border-yellow-400 p-4 rounded-lg bg-neutral-800 flex flex-col md:flex-row hover:bg-yellow-400 hover:bg-opacity-5">
             {/* VIP crown in top-left corner */}
-            <div className="absolute top-2 left-2 text-yellow-400 text-2xl">
+            <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 text-yellow-400 text-3xl z-10">
                 <FaCrown />
             </div>
 
@@ -137,6 +137,6 @@ export default function UserCardVIP({ user }: { user: UserVIP }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </li>
     )
 }

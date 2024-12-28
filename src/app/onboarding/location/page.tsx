@@ -90,8 +90,8 @@ function LocationSearch({
 function LocationMap({ lat, lng }: { lat: number; lng: number }) {
   // Load the Google Maps script
   const { isLoaded } = useLoadScript({
-    // IMPORTANT: Must be `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` if you're referencing .env.local
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    // IMPORTANT: Must be `GOOGLE_MAPS_API_KEY` if you're referencing .env.local
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
   })
 
   if (!isLoaded) {

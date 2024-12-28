@@ -255,10 +255,10 @@ export function Header() {
             <>
               {/* City */}
               <Select value={selectedCity} onValueChange={handleCityChange}>
-                <SelectTrigger className="w-[130px] text-sm border border-gray-600 bg-neutral-700 hover:bg-neutral-600 transition-colors">
+                <SelectTrigger className="w-[130px] text-sm border border-gray-700 bg-neutral-800 hover:bg-neutral-600 transition-colors">
                   <SelectValue placeholder="City" />
                 </SelectTrigger>
-                <SelectContent className="bg-neutral-700 text-white">
+                <SelectContent className="bg-neutral-800 text-gray-200">
                   <SelectItem value={selectedCity}>{selectedCity}</SelectItem>
                   {otherCities.map((city, idx) => (
                     <SelectItem key={idx} value={city}>

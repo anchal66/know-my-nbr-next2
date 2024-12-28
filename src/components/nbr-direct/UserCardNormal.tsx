@@ -46,7 +46,7 @@ export default function UserCardNormal({ user }: { user: UserNormal }) {
   const mainImage = user.media[0]
 
   return (
-    <li className="border border-gray-700 p-2 rounded flex items-center space-x-4 bg-neutral-800 relative">
+    <li className="border border-gray-700 p-2 rounded flex items-center space-x-4 bg-neutral-800 relative hover:bg-gray-700 hover:bg-opacity-5">
       {/* Image */}
       <div className="w-16 h-16 relative rounded-md overflow-hidden flex-shrink-0">
         {mainImage ? (

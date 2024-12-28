@@ -47,9 +47,9 @@ export default function UserCardFeatured({ user }: { user: UserFeatured }) {
     const imagesToShow = user.media.slice(0, 3)
 
     return (
-        <div className="relative border-2 border-gray-400 p-3 rounded-lg bg-neutral-800 flex flex-col md:flex-row">
+        <li className="relative border-2 border-gray-400 p-3 rounded-lg bg-neutral-800 flex flex-col md:flex-row hover:bg-gray-400 hover:bg-opacity-5">
             {/* Featured crown in top-left corner */}
-            <div className="absolute top-2 left-2 text-gray-300 text-xl">
+            <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 text-gray-300 text-3xl z-10">
                 <FaCrown />
             </div>
 
@@ -137,6 +137,6 @@ export default function UserCardFeatured({ user }: { user: UserFeatured }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </li>
     )
 }
