@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const router = useRouter()
   const dispatch = useDispatch()
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (token) {
@@ -55,6 +56,7 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     try {
+      setIsLoading(true);
       const { token } = await registerUser({ username, email, password })
       setToken(token)
       const decoded = decodeToken(token)
@@ -77,6 +79,7 @@ export default function RegisterPage() {
         }
       }
     } catch (error: any) {
+      setIsLoading(false)
       console.error(error)
       // Optionally, display error message to the user
     }
@@ -109,7 +112,7 @@ export default function RegisterPage() {
           className="mb-6 bg-neutral-700 text-white placeholder-gray-400"
           aria-label="Password"
         />
-        <Button onClick={handleRegister} className="w-full mb-4">
+        <Button onClick={handleRegister} className="w-full mb-4" disabled={isLoading}>
           Register
         </Button>
         <p className="text-center text-sm text-gray-400">

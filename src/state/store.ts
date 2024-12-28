@@ -3,11 +3,13 @@ import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './slices/authSlice'
 import userReducer from './slices/userSlice'
 import walletReducer from './slices/walletSlice'
+import snackbarReducer from '@/state/slices/snackbarSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     user: userReducer,
+    snackbar: snackbarReducer,
     wallet: walletReducer,
   },
 })

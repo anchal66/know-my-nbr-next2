@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const dispatch = useDispatch()
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
+      setIsLoading(true);
       const { token } = await loginUser({ usernameOrEmail, password })
       setToken(token)
       const decoded = decodeToken(token)
@@ -72,6 +74,7 @@ export default function LoginPage() {
         router.push('/')
       }
     } catch (error: any) {
+      setIsLoading(false);
       console.error(error)
       // Optionally, display error message to the user
     }
@@ -96,7 +99,7 @@ export default function LoginPage() {
           className="mb-6 bg-neutral-700 text-white placeholder-gray-400"
           aria-label="Password"
         />
-        <Button onClick={handleLogin} className="w-full mb-4">
+        <Button onClick={handleLogin} className="w-full mb-4" disabled={isLoading}>
           Login
         </Button>
         <p className="text-center text-sm text-gray-400">
