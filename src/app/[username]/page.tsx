@@ -171,8 +171,9 @@ export default function ProfilePage() {
         <div className="flex justify-end">
           {subscription ? (
             <p className="text-sm text-green-400">
-              You are subscribed to: <strong>{subscription.type}</strong>
-            </p>
+            You are subscribed to: <strong>{subscription.type} till : {new Date(subscription.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+          </p>
+          
           ) : (
             <Button className="bg-brand-gold text-black hover:brightness-110" 
                     onClick={() => setShowUpgradeModal(true)}>
@@ -188,7 +189,7 @@ export default function ProfilePage() {
           {isFollowed ? (
             <p className="text-sm text-green-400">
               {followEndDate
-                ? `Follow ends at: ${followEndDate}`
+                ? `Follow ends at: ${new Date(followEndDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
                 : 'You are following this user'}
             </p>
           ) : (
@@ -212,19 +213,19 @@ export default function ProfilePage() {
 
       <ContactNumbers
         canView={canViewContacts}
-        hasContactNumbers={hasContactNumbers}
+        hasContactNumbers={hasContactNumbers ? hasContactNumbers : contactNumbers}
         contactNumbers={contactNumbers}
         name={userProfile.name}
       />
       <SocialMedia
         canView={canViewSocial}
-        hasSocialMediaAccounts={hasSocialMediaAccounts}
+        hasSocialMediaAccounts={hasSocialMediaAccounts ? hasSocialMediaAccounts : socialMediaAccounts}
         socialMediaAccounts={socialMediaAccounts}
         name={userProfile.name}
       />
       <Websites
         canView={canViewWebsites}
-        hasWebsites={hasWebsites}
+        hasWebsites={hasWebsites ? hasWebsites : websites}
         websites={websites}
         name={userProfile.name}
       />
