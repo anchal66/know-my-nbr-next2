@@ -47,22 +47,24 @@ export default function UserCardNormal({ user }: { user: UserNormal }) {
 
   return (
     <li className="border border-gray-700 p-2 rounded flex items-center space-x-4 bg-neutral-800 relative hover:bg-gray-700 hover:bg-opacity-5">
-      {/* Image */}
-      <div className="w-16 h-16 relative rounded-md overflow-hidden flex-shrink-0">
-        {mainImage ? (
-          <Image
-            src={mainImage.url}
-            alt={`${user.name}'s profile`}
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-16 h-16 bg-neutral-700 flex items-center justify-center text-gray-300">
-            No Image
-          </div>
-        )}
-      </div>
-
+      <Link
+        href={`/${user.username}`}>
+        {/* Image */}
+        <div className="w-16 h-16 relative rounded-md overflow-hidden flex-shrink-0">
+          {mainImage ? (
+            <Image
+              src={mainImage.url}
+              alt={`${user.name}'s profile`}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-16 h-16 bg-neutral-700 flex items-center justify-center text-gray-300">
+              No Image
+            </div>
+          )}
+        </div>
+      </Link>
       {/* Info */}
       <div className="flex-1 text-gray-200">
         <Link

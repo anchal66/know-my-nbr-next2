@@ -1,28 +1,19 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { RootState, AppDispatch } from '@/state/store'
-import { fetchWalletBalance } from '@/state/slices/walletSlice'
-import { HeaderAddFundsModal } from '../HeaderAddFundsModal'
-import { logout } from '@/state/slices/authSlice'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from '@/components/ui/select'
-import { getUserDetails } from '@/lib/user'
-import { setUserDetail } from '@/state/slices/userSlice'
 import Image from 'next/image'
 import { removeToken } from '@/lib/cookies'
-import { Menu, Transition } from '@headlessui/react'
-import { FaChevronDown } from 'react-icons/fa'
-
-// Import your new BottomNav component
+import { logout } from '@/state/slices/authSlice'
+import { fetchWalletBalance } from '@/state/slices/walletSlice'
+import { RootState, AppDispatch } from '@/state/store'
+import { useSelector, useDispatch } from 'react-redux'
+import { DesktopNav } from './DesktopNav'
+import { CitySelector } from './CitySelector'
+import { HeaderAddFundsModal } from '../HeaderAddFundsModal'
 import { BottomNav } from './BottomNav'
+import { getUserDetails } from '@/lib/user'
+import { setUserDetail } from '@/state/slices/userSlice'
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>()
@@ -33,16 +24,7 @@ export function Header() {
   const isLoggedIn = !!token && !!username
 
   const [showAddFundsModal, setShowAddFundsModal] = useState(false)
-  const [selectedCity, setSelectedCity] = useState<string>('Unknown City')
 
-  // logout
-  function handleLogout() {
-    removeToken()
-    dispatch(logout())
-    window.location.href = '/login'
-  }
-
-  // fetch user data
   useEffect(() => {
     if (isLoggedIn) {
       dispatch(fetchWalletBalance())
@@ -59,220 +41,56 @@ export function Header() {
     }
   }
 
-  // derive city
   useEffect(() => {
-    if (!isLoggedIn || !userDetail || userDetail.locations.length === 0) {
-      setSelectedCity('Unknown City')
-      return
+    if (isLoggedIn) {
+      dispatch(fetchWalletBalance())
     }
-    const activeLoc = userDetail.locations.find((loc) => loc.isActive)
-    setSelectedCity(activeLoc ? activeLoc.city.name : 'Unknown City')
-  }, [userDetail, isLoggedIn])
+  }, [isLoggedIn, dispatch])
 
-  // other cities
-  const otherCities: string[] = []
-  if (isLoggedIn && userDetail && userDetail.locations.length > 0) {
-    otherCities.push(
-      ...userDetail.locations
-        .filter((loc) => !loc.isActive)
-        .map((loc) => loc.city.name)
-    )
-  }
-
-  function handleCityChange(value: string) {
-    setSelectedCity(value)
-    // If you want to set city in backend, do so here
+  function handleLogout() {
+    removeToken()
+    dispatch(logout())
+    window.location.href = '/login'
   }
 
   return (
     <>
-      {/* TOP HEADER for all screens */}
-      <header className="w-full h-16 bg-black border-b border-gray-700 text-brand-white flex items-center justify-between px-4">
-        {/* Left: Logo */}
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={120}
-            height={60}
-            priority
-            className="shrink-0"
-          />
-        </Link>
+      <header
+        className="
+          w-full bg-black border-b border-gray-700 text-brand-white
+          flex items-center justify-between
+          px-4 h-16
+        "
+      >
+        {/* Logo + slight spacing for city dropdown on small screens */}
+        <div className="flex items-center space-x-4">
+          <Link href="/" className="flex items-center shrink-0">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={120}
+              height={60}
+              priority
+              className="shrink-0"
+            />
+          </Link>
+        </div>
 
         {/* Desktop Nav (md+) */}
-        <nav className="hidden md:flex items-center space-x-6 font-semibold text-sm">
-          <Link href="/" className="hover:underline">
-            Home
-          </Link>
-          {isLoggedIn && (
-            <Link href={`/${username}`} className="hover:underline">
-              My Profile
-            </Link>
-          )}
+        <DesktopNav username={username} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
 
-          {isLoggedIn && (
-            <Link
-              href="/nbr-direct"
-              className="
-                relative inline-block px-3 py-1 font-semibold
-                bg-gradient-to-r from-brand-gold via-yellow-400 to-brand-gold
-                bg-clip-text text-transparent
-                animate-pulse
-                hover:opacity-90 transition-opacity duration-300
-              "
-            >
-              NBR Direct
-            </Link>
-          )}
-
-          {isLoggedIn && (
-            <Link href="/messages" className="hover:underline">
-              Messages
-            </Link>
-          )}
-
-          {/* More dropdown (Desktop) */}
-          {isLoggedIn && (
-            <Menu as="div" className="relative inline-block text-left">
-              {({ open }) => (
-                <>
-                  <Menu.Button
-                    className="flex items-center gap-1 hover:underline transition-colors"
-                  >
-                    More
-                    <FaChevronDown
-                      className={`text-xs transform transition-transform duration-200 ${open ? 'rotate-180' : ''
-                        }`}
-                    />
-                  </Menu.Button>
-
-                  {/* Add a nice transition */}
-                  <Transition
-                    as={Fragment}
-                    show={open}
-                    enter="transition ease-out duration-200"
-                    enterFrom="opacity-0 scale-95 translate-y-2"
-                    enterTo="opacity-100 scale-100 translate-y-0"
-                    leave="transition ease-in duration-150"
-                    leaveFrom="opacity-100 scale-100 translate-y-0"
-                    leaveTo="opacity-0 scale-95 translate-y-2"
-                  >
-                    <Menu.Items
-                      className="absolute right-0 mt-2 w-44 origin-top-right bg-neutral-800 text-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                      static
-                    >
-                      <div className="py-2 text-sm">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-wallet"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              My Wallet
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-followers"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              My Followers
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-following"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              Following
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-matches"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              My Matches
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-addresses"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              My Addresses
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <Link
-                              href="/my-reviews"
-                              className={`block px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              My Reviews
-                            </Link>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={handleLogout}
-                              className={`block text-red-500 w-full text-left px-4 py-2 ${active ? 'bg-neutral-700' : ''
-                                }`}
-                            >
-                              Logout
-                            </button>
-                          )}
-                        </Menu.Item>
-                      </div>
-                    </Menu.Items>
-                  </Transition>
-                </>
-              )}
-            </Menu>
-          )}
-        </nav>
-
-        {/* Right side: city + wallet or "Not logged in" */}
+        {/* Right side: city + wallet or "Not Logged In" */}
         <div className="flex items-center space-x-3">
           {isLoggedIn ? (
             <>
-              {/* City */}
-              <Select value={selectedCity} onValueChange={handleCityChange}>
-                <SelectTrigger className="w-[130px] text-sm border border-gray-700 bg-neutral-800 hover:bg-neutral-600 transition-colors">
-                  <SelectValue placeholder="City" />
-                </SelectTrigger>
-                <SelectContent className="bg-neutral-800 text-gray-200">
-                  <SelectItem value={selectedCity}>{selectedCity}</SelectItem>
-                  {otherCities.map((city, idx) => (
-                    <SelectItem key={idx} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* City Selector */}
+              <div className="hidden sm:block"> 
+                <CitySelector />
+              </div>
 
               {/* Wallet */}
               <div className="flex items-center space-x-2 text-sm">
-                <span className="font-semibold">
-                  {'\u20B9'} {balance.toFixed(2)}
-                </span>
+                <span className="font-semibold">{'\u20B9'} {balance.toFixed(2)}</span>
                 <button
                   onClick={() => setShowAddFundsModal(true)}
                   className="rounded-full border border-gray-600 p-1 hover:bg-neutral-700 transition-colors"
@@ -299,6 +117,13 @@ export function Header() {
           )}
         </div>
       </header>
+
+      {/* On very small screens, show CitySelector below the header if needed */}
+      {isLoggedIn && (
+        <div className="sm:hidden bg-black border-b border-gray-700 px-4 py-2 flex">
+          <CitySelector />
+        </div>
+      )}
 
       {/* BottomNav on small screens */}
       <BottomNav

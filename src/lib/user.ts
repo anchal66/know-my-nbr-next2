@@ -76,3 +76,16 @@ export async function getUserDetails(): Promise<UserDetailResponse> {
   const { data } = await api.get('/api/v1/users/user-detail')
   return data
 }
+
+/**
+ * New function to change user location in the backend.
+ * Returns the updated location item from the server.
+ */
+export async function changeUserLocation(params: {
+  id: string
+  placeId?: string
+  isActive: boolean
+}): Promise<LocationItem> {
+  const { data } = await api.post('/api/v1/users/locations/change-location', params)
+  return data
+}

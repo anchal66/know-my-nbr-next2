@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import { Fragment } from 'react'
-import { FaHome, FaUser, FaEnvelope, FaEllipsisH, FaWallet, FaUsers, FaUserPlus, FaHeart, FaMapMarkerAlt, FaStar, FaSignOutAlt } from 'react-icons/fa'
+import { usePathname, useRouter } from 'next/navigation'
+import {
+  FaHome, FaUser, FaEnvelope, FaEllipsisH, FaWallet, FaUsers,
+  FaUserPlus, FaHeart, FaMapMarkerAlt, FaStar, FaSignOutAlt
+} from 'react-icons/fa'
 import { MdBusiness } from 'react-icons/md'
 import { Menu, Transition } from '@headlessui/react'
-import { useRouter } from 'next/navigation'
 
 interface BottomNavProps {
   username: string | null
@@ -18,50 +21,48 @@ interface BottomNavProps {
  */
 export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
   const router = useRouter()
+  const pathname = usePathname()
 
   if (!isLoggedIn) return null
+
+  // Determine if we are on NBR Direct page
+  const isOnNBRDirect = pathname === '/nbr-direct'
 
   return (
     <nav
       className="
-        fixed
-        bottom-0
-        left-0
-        right-0
+        fixed bottom-0 left-0 right-0
         md:hidden
         bg-neutral-800
         border-t border-gray-700
-        flex
-        justify-around
-        items-center
-        h-16
-        text-brand-white
+        flex justify-around items-center
+        h-16 text-brand-white
         z-50
       "
     >
       {/* 1. Home */}
       <Link
         href="/"
-        className="
+        className={`
           flex flex-col items-center justify-center
           text-sm transition-colors
           hover:text-brand-gold
-        "
+          ${pathname === '/' ? 'text-brand-gold' : ''}
+        `}
       >
         <FaHome className="text-2xl mb-1" />
         <span>Home</span>
       </Link>
 
-      {/* 2. NBR Direct (Highlighted) */}
+      {/* 2. NBR Direct (Animated if NOT on /nbr-direct) */}
       <Link
         href="/nbr-direct"
-        className="
+        className={`
           relative flex flex-col items-center justify-center
-          text-sm
-          transition-colors hover:opacity-80
-          text-brand-gold
-          animate-pulse
-        "
+          text-sm transition-colors
+          hover:opacity-80
+          ${isOnNBRDirect ? 'text-brand-gold' : 'text-brand-gold animate-pulse'}
+        `}
       >
         <MdBusiness className="text-2xl mb-1" />
         <span>NBR</span>
@@ -70,11 +71,12 @@ export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
       {/* 3. Messages */}
       <Link
         href="/messages"
-        className="
+        className={`
           flex flex-col items-center justify-center
           text-sm transition-colors
           hover:text-brand-gold
-        "
+          ${pathname === '/messages' ? 'text-brand-gold' : ''}
+        `}
       >
         <FaEnvelope className="text-2xl mb-1" />
         <span>Messages</span>
@@ -83,11 +85,12 @@ export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
       {/* 4. My Profile */}
       <Link
         href={`/${username}`}
-        className="
+        className={`
           flex flex-col items-center justify-center
           text-sm transition-colors
           hover:text-brand-gold
-        "
+          ${pathname === `/${username}` ? 'text-brand-gold' : ''}
+        `}
       >
         <FaUser className="text-2xl mb-1" />
         <span>Profile</span>
@@ -123,21 +126,12 @@ export function BottomNav({ username, onLogout, isLoggedIn }: BottomNavProps) {
               <Menu.Items
                 as="div"
                 className="
-                  absolute
-                  bottom-full
-                  right-0
-                  mb-3
-                  w-48
-                  bg-neutral-700
-                  text-white
-                  rounded-lg
-                  shadow-xl
-                  py-2
-                  z-50
+                  absolute bottom-full right-0 mb-3
+                  w-48 bg-neutral-800 text-white
+                  rounded-lg shadow-xl py-2 z-50
                   focus:outline-none
                 "
               >
-                {/* Use 'as' or function pattern inside Menu.Item to avoid deprecated warnings */}
                 <Menu.Item as="div">
                   {({ active }) => (
                     <Link
