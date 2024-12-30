@@ -394,14 +394,14 @@ function ContactNumbers({
           <div key={cn.id} className="flex flex-wrap items-center space-x-2 mt-1 text-sm">
             <Phone size={16} className="text-brand-gold" />
             <span>
-              {cn.countryCode}
+              +{cn.countryCode}{' '}
               {cn.number}
             </span>
             {/* Apps */}
             {cn.apps?.length > 0 && (
               <div className="flex items-center space-x-3 ml-2">
                 {cn.apps.map((app) => (
-                  <div key={app.id}>{renderContactApp(app.name, cn.fullNumber, userData.userProfile.username)}</div>
+                  <div key={app.id}>{renderContactApp(app.name, cn.number, userData.userProfile.username)}</div>
                 ))}
               </div>
             )}
