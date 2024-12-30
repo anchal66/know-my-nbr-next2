@@ -401,7 +401,7 @@ function ContactNumbers({
             {cn.apps?.length > 0 && (
               <div className="flex items-center space-x-3 ml-2">
                 {cn.apps.map((app) => (
-                  <div key={app.id}>{renderContactApp(app.name, cn.fullNumber, userData.userProfile.username)}</div>
+                  <div key={app.id}>{renderContactApp(app.name, cn.number, userData.userProfile.username)}</div>
                 ))}
               </div>
             )}
