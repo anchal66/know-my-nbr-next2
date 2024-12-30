@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link' // Import Link from next/link
 import { RootState, AppDispatch } from '@/state/store'
 
 // For the other user's profile
@@ -33,10 +34,11 @@ import {
   Languages,
   ArrowUpDown,
 } from 'lucide-react'
-import { SocialIcon } from 'react-social-icons'
 
 // For shadcn/ui-like button styling
 import { Button } from '@/components/ui/button'
+
+// DynamicSocialIcon:
 import DynamicSocialIcon from '@/components/DynamicSocialApp'
 
 // ------------- Type Guard -------------
@@ -51,9 +53,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
 
-  const { detail: currentUserDetail} =
-    useSelector((state: RootState) => state.user)
-
+  const { detail: currentUserDetail } = useSelector((state: RootState) => state.user)
   const { token, username: loggedInUsername } = useSelector((state: RootState) => state.auth)
 
   const [currentUserLoading, setCurrentLoading] = useState(false)
@@ -86,12 +86,12 @@ export default function ProfilePage() {
     if (isMyProfile) {
       if (!currentUserDetail) {
         try {
-          setCurrentLoading(true);
-        getUserDetails();
-        } catch(err: any) {
-          setCurrentUserError(err.response?.data?.message || 'Failed to load user profile');
+          setCurrentLoading(true)
+          getUserDetails()
+        } catch (err: any) {
+          setCurrentUserError(err.response?.data?.message || 'Failed to load user profile')
         } finally {
-          setCurrentLoading(false);
+          setCurrentLoading(false)
         }
       }
       fetchSubscriptionStatus()
@@ -99,9 +99,6 @@ export default function ProfilePage() {
       fetchOtherUser(params.username)
     }
   }, [params.username, isMyProfile, dispatch])
-
-  // If we have currentUserDetail, no need to store it again in local state
-  // We'll rely on userData down below
 
   // fetch subscription (my profile)
   async function fetchSubscriptionStatus() {
@@ -322,7 +319,7 @@ export default function ProfilePage() {
 ------------------------------------------------------------------ */
 
 // Banner
-function Banner({ bannerUrl}: { bannerUrl: string | null;}) {
+function Banner({ bannerUrl }: { bannerUrl: string | null }) {
   if (!bannerUrl) {
     return <div className="w-full h-16 bg-black/20 rounded-md" />
   }
@@ -420,7 +417,10 @@ function ContactNumbers({
           <p className="text-sm text-gray-400 mt-1">
             This user has private phone numbers.
             <br />
-            <span className="text-brand-gold underline cursor-pointer" onClick={() => alert('Open follow modal, or handle logic here')}>
+            <span
+              className="text-brand-gold underline cursor-pointer"
+              onClick={() => alert('Open follow modal, or handle logic here')}
+            >
               Follow them
             </span>{' '}
             to unlock these details!
@@ -436,47 +436,53 @@ function ContactNumbers({
 // Helper for contact apps
 function renderContactApp(appName: string, fullNumber: string, username: string) {
   const lower = appName.toLowerCase()
+
   if (lower === 'whatsapp') {
     const waLink = `https://wa.me/${fullNumber.replace('+', '')}?text=Hi I found your profile from www.knowmynbr.com/${username}`
     return (
-      <a
+      <Link
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
       >
-        <DynamicSocialIcon size={30} appName={lower} />
+        <DynamicSocialIcon appName="whatsapp" url = {waLink} size={30} />
         <span className="text-sm">WhatsApp</span>
-      </a>
-    )
-  } else if (lower === 'telegram') {
-    const tgLink = `https://t.me/${fullNumber.replace('+', '')}?text=Hi I found your profile from www.knowmynbr.com/${username}`
-    return (
-      <a
-        href={tgLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
-      >
-        <DynamicSocialIcon size={30} appName={lower} />
-        <span className="text-sm">Telegram</span>
-      </a>
-    )
-  } else if (lower === 'signal') {
-    const tgLink = `signal://send?number=${fullNumber.replace('+', '')}`
-    return (
-      <a
-        href={tgLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
-      >
-        <DynamicSocialIcon size={30} appName={lower} />
-        <span className="text-sm">Signal</span>
-      </a>
+      </Link>
     )
   }
-  // fallback
+
+  if (lower === 'telegram') {
+    const tgLink = `https://t.me/${fullNumber.replace('+', '')}?text=Hi I found your profile from www.knowmynbr.com/${username}`
+    return (
+      <Link
+        href={tgLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
+      >
+        <DynamicSocialIcon appName="telegram" url = {tgLink}size={30} />
+        <span className="text-sm">Telegram</span>
+      </Link>
+    )
+  }
+
+  if (lower === 'signal') {
+    const signalLink = `signal://send?number=${fullNumber.replace('+', '')}`
+    return (
+      <Link
+        href={signalLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
+      >
+        <DynamicSocialIcon appName="signal" url={signalLink} size={30} />
+        <span className="text-sm">Signal</span>
+      </Link>
+    )
+  }
+
+  // fallback if the app is unknown
   return (
     <span className="inline-flex items-center space-x-1 text-xs text-gray-400">
       <MessageCircle size={16} />
@@ -496,45 +502,45 @@ function ProfileStats({
   return (
     <section className="rounded-lg border border-gray-700 bg-neutral-900 p-4 space-y-2">
       <h2 className="text-lg font-semibold">Profile Stats</h2>
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center space-x-1">
-            <CheckCircle2 size={16} />
-            <span>Matches: {userData.matchesCount ?? 0}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <CheckCircle2 size={16} />
-            <span>Hearts Received: {userData.heartReceivedCount ?? 0}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <CheckCircle2 size={16} />
-            <span>Comments: {userData.commentsCount ?? 0}</span>
-          </div>
-
-          {/* If other user => might have followersCount/followsCount */}
-          {isOtherUserDetailResponse(userData) ? (
-            <>
-              <div className="flex items-center space-x-1">
-                <CheckCircle2 size={16} />
-                <span>Followers: {userData.followersCount ?? 0}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <CheckCircle2 size={16} />
-                <span>Follows: {userData.followsCount ?? 0}</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center space-x-1">
-                <CheckCircle2 size={16} />
-                <span>Followers: {userData.followers?.length ?? 0}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <CheckCircle2 size={16} />
-                <span>Follows: {userData.follows?.length ?? 0}</span>
-              </div>
-            </>
-          )}
+      <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex items-center space-x-1">
+          <CheckCircle2 size={16} />
+          <span>Matches: {userData.matchesCount ?? 0}</span>
         </div>
+        <div className="flex items-center space-x-1">
+          <CheckCircle2 size={16} />
+          <span>Hearts Received: {userData.heartReceivedCount ?? 0}</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <CheckCircle2 size={16} />
+          <span>Comments: {userData.commentsCount ?? 0}</span>
+        </div>
+
+        {/* If other user => might have followersCount/followsCount */}
+        {isOtherUserDetailResponse(userData) ? (
+          <>
+            <div className="flex items-center space-x-1">
+              <CheckCircle2 size={16} />
+              <span>Followers: {userData.followersCount ?? 0}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <CheckCircle2 size={16} />
+              <span>Follows: {userData.followsCount ?? 0}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center space-x-1">
+              <CheckCircle2 size={16} />
+              <span>Followers: {userData.followers?.length ?? 0}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <CheckCircle2 size={16} />
+              <span>Follows: {userData.follows?.length ?? 0}</span>
+            </div>
+          </>
+        )}
+      </div>
     </section>
   )
 }
@@ -548,53 +554,53 @@ function PersonalInfo({
   return (
     <section className="rounded-lg border border-gray-700 bg-neutral-900 p-4 space-y-2">
       <h2 className="text-lg font-semibold">Personal Info</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          {/* DOB */}
-          <div className="flex items-center space-x-2">
-            <Calendar size={16} className="text-brand-gold" />
-            <span>DOB: {userData.userProfile?.dateOfBirth || 'N/A'}</span>
-          </div>
-          {/* Gender */}
-          <div className="flex items-center space-x-2">
-            <User size={16} className="text-brand-gold" />
-            <span>Gender: {userData.userProfile?.gender?.name || 'N/A'}</span>
-          </div>
-          {/* Orientation */}
-          <div className="flex items-center space-x-2">
-            <Heart size={16} className="text-brand-gold" />
-            <span>Orientation: {userData.userProfile?.orientation?.name || 'N/A'}</span>
-          </div>
-          {/* Ethnicity */}
-          <div className="flex items-center space-x-2">
-            <Globe2 size={16} className="text-brand-gold" />
-            <span>Ethnicity: {userData.userProfile?.ethnicity?.name || 'N/A'}</span>
-          </div>
-          {/* Hair Color */}
-          <div className="flex items-center space-x-2">
-            <Droplet size={16} className="text-brand-gold" />
-            <span>Hair Color: {userData.userProfile?.hairColor?.name || 'N/A'}</span>
-          </div>
-          {/* Height */}
-          <div className="flex items-center space-x-2">
-            <ArrowUpDown size={16} className="text-brand-gold" />
-            <span>
-              Height:{' '}
-              {userData.userProfile?.heightCm
-                ? `${userData.userProfile.heightCm} cm`
-                : 'N/A'}
-            </span>
-          </div>
-          {/* Languages */}
-          <div className="flex items-center space-x-2 col-span-full sm:col-span-2">
-            <Languages size={16} className="text-brand-gold" />
-            <span>
-              Languages:{' '}
-              {userData.userProfile?.languages?.length
-                ? userData.userProfile.languages.map((l) => l.name).join(', ')
-                : 'N/A'}
-            </span>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        {/* DOB */}
+        <div className="flex items-center space-x-2">
+          <Calendar size={16} className="text-brand-gold" />
+          <span>DOB: {userData.userProfile?.dateOfBirth || 'N/A'}</span>
         </div>
+        {/* Gender */}
+        <div className="flex items-center space-x-2">
+          <User size={16} className="text-brand-gold" />
+          <span>Gender: {userData.userProfile?.gender?.name || 'N/A'}</span>
+        </div>
+        {/* Orientation */}
+        <div className="flex items-center space-x-2">
+          <Heart size={16} className="text-brand-gold" />
+          <span>Orientation: {userData.userProfile?.orientation?.name || 'N/A'}</span>
+        </div>
+        {/* Ethnicity */}
+        <div className="flex items-center space-x-2">
+          <Globe2 size={16} className="text-brand-gold" />
+          <span>Ethnicity: {userData.userProfile?.ethnicity?.name || 'N/A'}</span>
+        </div>
+        {/* Hair Color */}
+        <div className="flex items-center space-x-2">
+          <Droplet size={16} className="text-brand-gold" />
+          <span>Hair Color: {userData.userProfile?.hairColor?.name || 'N/A'}</span>
+        </div>
+        {/* Height */}
+        <div className="flex items-center space-x-2">
+          <ArrowUpDown size={16} className="text-brand-gold" />
+          <span>
+            Height:{' '}
+            {userData.userProfile?.heightCm
+              ? `${userData.userProfile.heightCm} cm`
+              : 'N/A'}
+          </span>
+        </div>
+        {/* Languages */}
+        <div className="flex items-center space-x-2 col-span-full sm:col-span-2">
+          <Languages size={16} className="text-brand-gold" />
+          <span>
+            Languages:{' '}
+            {userData.userProfile?.languages?.length
+              ? userData.userProfile.languages.map((l) => l.name).join(', ')
+              : 'N/A'}
+          </span>
+        </div>
+      </div>
     </section>
   )
 }
@@ -692,7 +698,7 @@ function MaybeMedia({
 
 /* ---------------- MaybeLocations ---------------- */
 function MaybeLocations({
-  userData
+  userData,
 }: {
   userData: OtherUserDetailResponse | UserDetailResponse
 }) {
@@ -708,7 +714,10 @@ function SocialMedia({ userData }: { userData: OtherUserDetailResponse | UserDet
       {userData.socialMediaAccounts?.length ? (
         <div className="flex flex-col gap-2">
           {userData.socialMediaAccounts.map((sm) => (
-            <div key={sm.id} className="flex items-center space-x-2 bg-black/20 px-3 py-2 rounded">
+            <div
+              key={sm.id}
+              className="flex items-center space-x-2 bg-black/20 px-3 py-2 rounded"
+            >
               {renderSocialMediaIcon(sm.platform.name, sm.url)}
             </div>
           ))}
@@ -728,8 +737,26 @@ function renderSocialMediaIcon(platformName: string, url: string) {
   if (lower === 'instagram') Icon = Instagram
 
   const link = url.startsWith('http') ? url : `https://${url}`
+
+  // Decide internal vs external
+  const isInternal = link.startsWith('/')
+
+  if (isInternal) {
+    // Use Next <Link> for internal navigation
+    return (
+      <Link
+        href={link}
+        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
+      >
+        <Icon size={18} />
+        <span className="text-sm">{platformName}</span>
+      </Link>
+    )
+  }
+
+  // External: open in new tab
   return (
-    <a
+    <Link
       href={link}
       target="_blank"
       rel="noopener noreferrer"
@@ -737,7 +764,7 @@ function renderSocialMediaIcon(platformName: string, url: string) {
     >
       <Icon size={18} />
       <span className="text-sm">{platformName}</span>
-    </a>
+    </Link>
   )
 }
 
@@ -750,20 +777,42 @@ function Websites({ userData }: { userData: OtherUserDetailResponse | UserDetail
         <div className="flex flex-col gap-2">
           {userData.websites.map((site) => {
             const fullUrl = site.url.startsWith('http') ? site.url : `https://${site.url}`
+            // Determine internal vs external
+            const isInternal = fullUrl.startsWith(process.env.NEXT_PUBLIC_BASE_URL || '/')
+
+            if (isInternal) {
+              return (
+                <Link
+                  key={site.id}
+                  href={fullUrl}
+                  className="flex items-center justify-between bg-black/20 px-3 py-2 rounded text-sm text-brand-gold underline hover:text-brand-gold/80"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Globe size={16} className="text-brand-gold" />
+                    <span className="text-sm">{truncateUrl(site.url, 30)}</span>
+                  </div>
+                </Link>
+              )
+            }
+
+            // External link (open in new tab)
             return (
-              <div key={site.id} className="flex items-center justify-between bg-black/20 px-3 py-2 rounded">
+              <div
+                key={site.id}
+                className="flex items-center justify-between bg-black/20 px-3 py-2 rounded"
+              >
                 <div className="flex items-center space-x-2">
                   <Globe size={16} className="text-brand-gold" />
                   <span className="text-sm">{truncateUrl(site.url, 30)}</span>
                 </div>
-                <a
+                <Link
                   href={fullUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-brand-gold underline hover:text-brand-gold/80"
                 >
                   Open
-                </a>
+                </Link>
               </div>
             )
           })}
@@ -782,7 +831,10 @@ function MediaGallery({ media }: { media: MediaItem[] }) {
       <h2 className="text-lg font-semibold">Media</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {media.map((m, idx) => (
-          <div key={m.id || idx} className="bg-black/20 p-2 rounded flex items-center justify-center">
+          <div
+            key={m.id || idx}
+            className="bg-black/20 p-2 rounded flex items-center justify-center"
+          >
             <img src={m.url} alt={m.type} className="max-h-40 object-cover rounded" />
           </div>
         ))}
@@ -798,7 +850,10 @@ function Locations({ locations }: { locations: LocationItem[] }) {
       <h2 className="text-lg font-semibold">Locations</h2>
       <div className="flex flex-col gap-2">
         {locations.map((loc) => (
-          <div key={loc.id} className="flex items-center space-x-2 bg-black/20 px-3 py-2 rounded">
+          <div
+            key={loc.id}
+            className="flex items-center space-x-2 bg-black/20 px-3 py-2 rounded"
+          >
             <MapPin size={16} className="text-brand-gold" />
             <span className="text-sm">
               {loc.name}, {loc.city?.name}, {loc.city?.state}, {loc.city?.country}
