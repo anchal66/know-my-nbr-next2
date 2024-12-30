@@ -1,3 +1,5 @@
+// src/lib/user.ts
+
 import api from './api'
 import { FollowResponse } from './follow'
 import { Subscription } from './subscription'
@@ -66,9 +68,12 @@ export interface UserDetailResponse {
   websites: Website[]
   media: MediaItem[]
   locations: LocationItem[]
-  followers: FollowResponse[],
-  follows: FollowResponse[],
-  subscriptionType: Subscription,
+  followers: FollowResponse[]
+  follows: FollowResponse[]
+  subscriptionType: Subscription
+  matchesCount: number
+  heartReceivedCount: number
+  commentsCount: number
   activeCityId: string
 }
 
