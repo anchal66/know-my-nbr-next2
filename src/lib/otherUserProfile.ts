@@ -16,6 +16,11 @@ export interface OtherUserDetailResponse {
   websites: Website[]
   media: MediaItem[]
   locations: LocationItem[]
+  matchesCount: number
+  heartReceivedCount: number
+  commentsCount: number
+  followersCount: number
+  followsCount: number
   isFollowed: boolean
   hasContactNumbers: boolean
   hasSocialMediaAccounts: boolean
