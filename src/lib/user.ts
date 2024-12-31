@@ -94,3 +94,11 @@ export async function changeUserLocation(params: {
   const { data } = await api.post('/api/v1/users/locations/change-location', params)
   return data
 }
+
+// Just returns Long as count of user
+export async function getCityUserCount(locationId: string): Promise<number> {
+  const { data } = await api.get('/api/v1/users/locations/city/user-count-number', {
+    params: { locationId },
+  })
+  return data
+}

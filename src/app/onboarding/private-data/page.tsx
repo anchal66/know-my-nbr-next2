@@ -502,7 +502,7 @@ export default function OnboardingPrivateDataPage() {
         >
           Add Another Social Media
         </Button>
-
+        <br />
         {/* ===================== SUBMIT BUTTON ==================== */}
         <Button
           className="bg-brand-gold text-black hover:brightness-110"
