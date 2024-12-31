@@ -1,4 +1,5 @@
 // src/lib/onboarding.ts
+import { AxiosProgressEvent } from 'axios'
 import api from './api'
 
 interface OnboardingProfileData {
@@ -113,6 +114,37 @@ export async function uploadUserMedia(file: File, orderNo: number) {
     })
     return response.data
 }
+
+/**
+ * Upload a single image with progress tracking.
+ * 
+ * @param file The File object to upload
+ * @param orderNo The index (1-based) for this file
+ * @param onProgress A callback that receives the current % progress (0-100)
+ */
+export async function uploadMediaWithProgress(
+    file: File,
+    orderNo: number,
+    onProgress: (percent: number) => void
+  ): Promise<any> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', 'IMAGE')
+    formData.append('orderNo', orderNo.toString())
+  
+    const response = await api.post('/api/v1/users/media', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        // We'll only compute progress if total is available
+        if (progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          onProgress(percent)
+        }
+      },
+    })
+  
+    return response.data // or however you want to structure return
+  }
 
 export async function saveUserLocation(data: LocationData) {
     const response = await api.post('/api/v1/users/locations', data)
