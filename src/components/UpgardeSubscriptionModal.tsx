@@ -6,7 +6,7 @@ import { AppDispatch } from '@/state/store'
 import { useDispatch } from 'react-redux'
 
 interface UpgradeSubscriptionModalProps {
-  cityId: number
+  cityId: string
   onClose: () => void
   onSubscribed: (subscription: Subscription) => void
 }

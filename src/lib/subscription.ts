@@ -21,7 +21,7 @@ export async function getSubscriptionStatus(): Promise<Subscription[]> {
 }
 
 /** Fetch subscription price */
-export async function getSubscriptionPrice(cityId: number, subscriptionType: string): Promise<number> {
+export async function getSubscriptionPrice(cityId: string, subscriptionType: string): Promise<number> {
   const { data } = await api.get('/api/v1/prices', {
     params: {
       cityId,
@@ -32,7 +32,7 @@ export async function getSubscriptionPrice(cityId: number, subscriptionType: str
 }
 
 /** Subscribe to a plan */
-export async function subscribeToPlan(cityId: number, subscriptionType: string): Promise<Subscription> {
+export async function subscribeToPlan(cityId: string, subscriptionType: string): Promise<Subscription> {
   const payload = { cityId, type: subscriptionType }
   const { data } = await api.post('/api/v1/subscriptions', payload)
   return data

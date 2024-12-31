@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '@/state/store'
+import { Button } from '@/components/ui/button'
 import {
   fetchWalletBalance,
   fetchWalletTransactions,
@@ -104,12 +105,12 @@ export default function MyWalletPage() {
             <h2 className="text-lg font-semibold">Wallet Balance</h2>
             <p className="text-2xl font-bold mt-2">{`\u20B9`} {balance.toFixed(2)}</p>
           </div>
-          <button
+          <Button
+            className="bg-brand-gold text-black hover:brightness-110 transition-colors"
             onClick={() => dispatch(fetchWalletBalance())}
-            className="px-4 py-2 bg-brand-gold hover:bg-green-700 rounded-md text-white transition-colors"
           >
             Refresh
-          </button>
+          </Button>
         </div>
 
         {/* Add Funds */}
@@ -140,12 +141,12 @@ export default function MyWalletPage() {
               </select>
             </div>
             <div>
-              <button
+              <Button
                 onClick={handleAddFunds}
-                className="px-4 py-2 bg-brand-gold hover:bg-green-700 rounded-md text-white transition-colors"
+                className="bg-brand-gold text-black hover:brightness-110 transition-colors"
               >
                 Add Funds
-              </button>
+              </Button>
             </div>
           </div>
           <p className="text-xs text-gray-400">
@@ -189,12 +190,12 @@ export default function MyWalletPage() {
               />
             </div>
           </div>
-          <button
+          <Button
             onClick={handleSendFunds}
-            className="px-4 py-2 bg-brand-gold hover:bg-green-700 rounded-md text-white transition-colors mt-2"
+            className="bg-brand-gold text-black hover:brightness-110 transition-colors"
           >
             Send Now
-          </button>
+          </Button>
         </div>
 
         {/* Transaction History */}
@@ -240,7 +241,7 @@ export default function MyWalletPage() {
           {/* Basic pagination info (optional) */}
           {transactions && (
             <div className="mt-2 text-sm text-gray-400">
-              Page {transactions.number + 1} of {transactions.totalPages} 
+              Page {transactions.number + 1} of {transactions.totalPages}
               {' ('}
               {transactions.totalElements} total
               {')'}

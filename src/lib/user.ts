@@ -57,7 +57,7 @@ export interface LocationItem {
   latitude: number
   longitude: number
   name: string
-  city: { id: number, name: string, state: string, country: string }
+  city: { id: string, name: string, state: string, country: string }
   isActive: boolean
 }
 

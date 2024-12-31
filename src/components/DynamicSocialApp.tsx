@@ -16,6 +16,7 @@ const DynamicSocialIcon: React.FC<DynamicSocialIconProps> = ({ appName, url, siz
 
   return (
     <SocialIcon
+      network={appName}
       url={iconUrl}
       style={{ height: size, width: size, ...style }} // Apply size and custom styles
       target="_blank"
