@@ -1,5 +1,4 @@
 'use client'
-// Force dynamic to avoid the "missing suspense boundary" error
 export const dynamic = 'force-dynamic'
 
 import React, { useEffect, useState } from 'react'
@@ -9,8 +8,6 @@ import Image from 'next/image'
 
 import { RootState } from '@/state/store'
 import { Button } from '@/components/ui/button'
-
-// Import from the new service file
 import {
   getConversations,
   getMessages,
