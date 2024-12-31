@@ -238,9 +238,9 @@ export default function OnboardingProfilePage() {
           </div>
 
           <p className="hidden md:block text-sm md:text-base leading-6 text-gray-300">
-            Let’s build your <strong>public</strong> profile so other users can discover you! 
-            Your <em>name</em>, <em>date of birth</em>, <em>bio</em>, and other details are shown 
-            to potential matches. Share enough info to stand out—feel free to use 
+            Let’s build your <strong>public</strong> profile so other users can discover you!
+            Your <em>name</em>, <em>date of birth</em>, <em>bio</em>, and other details are shown
+            to potential matches. Share enough info to stand out—feel free to use
             emojis in your bio!
           </p>
 
@@ -446,7 +446,7 @@ export default function OnboardingProfilePage() {
                     <CommandInput
                       placeholder="Search languages..."
                       value={languageSearch}
-                      onChange={(e) => setLanguageSearch(e.target.value)}
+                      onValueChange={(val) => setLanguageSearch(val)}
                       className="bg-neutral-900 text-gray-200 placeholder-gray-400 border-b border-gray-700"
                     />
                     <CommandEmpty>No languages found.</CommandEmpty>
