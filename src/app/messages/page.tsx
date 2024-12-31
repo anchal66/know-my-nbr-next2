@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import React, { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -7,8 +8,6 @@ import Image from 'next/image'
 
 import { RootState } from '@/state/store'
 import { Button } from '@/components/ui/button'
-
-// Import from the new service file
 import {
   getConversations,
   getMessages,
