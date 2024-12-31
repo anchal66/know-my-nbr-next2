@@ -227,10 +227,10 @@ export default function ProfilePage() {
           <p className="text-sm text-green-400">
             {followEndDate
               ? `Follow ends at: ${new Date(followEndDate).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}`
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}`
               : 'You are following this user'}
           </p>
         ) : (
@@ -290,7 +290,7 @@ export default function ProfilePage() {
           cityId={
             userData.locations && userData.locations.length > 0
               ? userData.locations[0].city.id
-              : 0
+              : ''
           }
           onClose={() => setShowFollowModal(false)}
           onFollowed={handleFollowed}
@@ -304,7 +304,7 @@ export default function ProfilePage() {
           cityId={
             userData.locations && userData.locations.length > 0
               ? userData.locations[0].city.id
-              : 0
+              : ''
           }
           onClose={() => setShowUpgradeModal(false)}
           onSubscribed={(sub) => setSubscription(sub)}
@@ -440,45 +440,28 @@ function renderContactApp(appName: string, fullNumber: string, username: string)
   if (lower === 'whatsapp') {
     const waLink = `https://wa.me/${fullNumber.replace('+', '')}?text=Hi I found your profile from www.knowmynbr.com/${username}`
     return (
-      <Link
-        href={waLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
-      >
-        <DynamicSocialIcon appName="whatsapp" url = {waLink} size={30} />
-        <span className="text-sm">WhatsApp</span>
-      </Link>
+      <>
+        <DynamicSocialIcon appName="whatsapp" url={waLink} size={30} />
+      </>
     )
   }
 
   if (lower === 'telegram') {
     const tgLink = `https://t.me/${fullNumber.replace('+', '')}?text=Hi I found your profile from www.knowmynbr.com/${username}`
     return (
-      <Link
-        href={tgLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
-      >
-        <DynamicSocialIcon appName="telegram" url = {tgLink}size={30} />
-        <span className="text-sm">Telegram</span>
-      </Link>
+      <>
+        <DynamicSocialIcon appName="telegram" url={tgLink} size={30} />
+      </>
     )
   }
 
   if (lower === 'signal') {
     const signalLink = `signal://send?number=${fullNumber.replace('+', '')}`
     return (
-      <Link
-        href={signalLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center space-x-1 text-brand-gold hover:text-brand-gold/80"
-      >
+      <>
         <DynamicSocialIcon appName="signal" url={signalLink} size={30} />
         <span className="text-sm">Signal</span>
-      </Link>
+      </>
     )
   }
 

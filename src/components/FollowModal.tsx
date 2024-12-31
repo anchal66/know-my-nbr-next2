@@ -7,7 +7,7 @@ import { getFollowPrice, followUser } from '@/lib/follow'
 import { AppDispatch } from '@/state/store'
 
 interface FollowModalProps {
-  cityId: number
+  cityId: string
   onClose: () => void
   onFollowed: (endDate: string) => void
   followedUsername: string // Add this so we know whom to follow
