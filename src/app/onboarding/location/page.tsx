@@ -19,15 +19,16 @@ import { setCredentials } from '@/state/slices/authSlice'
 // --- UI imports
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 
 interface Suggestion {
   placeId: string
   description: string
 }
 
-// -----------------------------------------------------------
-//  LocationSearch COMPONENT
-// -----------------------------------------------------------
+// ----------------------------------------------------------------
+//  LocationSearch Component
+// ----------------------------------------------------------------
 function LocationSearch({
   searchTerm,
   setSearchTerm,
@@ -55,6 +56,9 @@ function LocationSearch({
 
   return (
     <div className="relative">
+      <label className="text-sm text-gray-300 mb-1 block">
+        Type an address to update your location (optional):
+      </label>
       <Input
         placeholder="Search for a location..."
         value={searchTerm}
@@ -84,13 +88,11 @@ function LocationSearch({
   )
 }
 
-// -----------------------------------------------------------
-//  LocationMap COMPONENT
-// -----------------------------------------------------------
+// ----------------------------------------------------------------
+//  LocationMap Component
+// ----------------------------------------------------------------
 function LocationMap({ lat, lng }: { lat: number; lng: number }) {
-  // Load the Google Maps script
   const { isLoaded } = useLoadScript({
-    // IMPORTANT: Must be `GOOGLE_MAPS_API_KEY` if you're referencing .env.local
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
   })
 
@@ -99,7 +101,7 @@ function LocationMap({ lat, lng }: { lat: number; lng: number }) {
   }
 
   return (
-    <div className="w-full h-64">
+    <div className="w-full h-64 mt-2">
       <GoogleMap
         center={{ lat, lng }}
         zoom={14}
@@ -111,35 +113,29 @@ function LocationMap({ lat, lng }: { lat: number; lng: number }) {
   )
 }
 
-// -----------------------------------------------------------
-//  MAIN PAGE COMPONENT
-// -----------------------------------------------------------
+// ----------------------------------------------------------------
+//  MAIN PAGE: OnboardingLocationPage
+// ----------------------------------------------------------------
 export default function OnboardingLocationPage() {
   const router = useRouter()
   const dispatch = useDispatch()
 
   const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
 
-  // 1) States for lat/lng/placeId
+  // States
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
   const [placeId, setPlaceId] = useState<string>('')
 
-  // 2) This keeps track if we already saved the **initial** location once.
   const [initialLocationSaved, setInitialLocationSaved] = useState<boolean>(false)
-
-  // 3) Refresh token from the server (if your backend returns it).
   const [refreshTokenState, setRefreshTokenState] = useState<string>('')
 
-  // 4) For display only
   const [address, setAddress] = useState<string>('')
-
-  // 5) For location search
   const [searchTerm, setSearchTerm] = useState<string>('')
 
-  // -----------------------------------------------------------
-  //  On mount: check if onboarding finished, then fetch location.
-  // -----------------------------------------------------------
+  // ----------------------------------------------------------------
+  //  On mount: if onboarding finished, or else detect user location
+  // ----------------------------------------------------------------
   useEffect(() => {
     if (onBoardingStatus === 'FINISHED') {
       router.push('/')
@@ -155,23 +151,19 @@ export default function OnboardingLocationPage() {
           setLng(userLng)
 
           try {
-            // Immediately call saveUserLocation with lat/lng (once).
+            // Immediately save user location once
             const data = await saveUserLocation({
               latitude: userLat.toString(),
               longitude: userLng.toString(),
               isActive: true,
-              refreshToken: '' // or pass in your stored refresh token if needed
+              refreshToken: ''
             })
-
-            // If the backend returns an address or city info
             if (data.name) {
               setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
             }
-
             if (data.refreshToken) {
               setRefreshTokenState(data.refreshToken)
             }
-
             setInitialLocationSaved(true)
           } catch (error) {
             console.error('Error saving initial location:', error)
@@ -184,20 +176,18 @@ export default function OnboardingLocationPage() {
     }
   }, [onBoardingStatus, router, initialLocationSaved])
 
-  // -----------------------------------------------------------
-  //  Handling suggestion click
-  // -----------------------------------------------------------
+  // ----------------------------------------------------------------
+  //  Handle suggestion click
+  // ----------------------------------------------------------------
   const handleSuggestionClick = async (suggestion: Suggestion) => {
     try {
-      // Instead of just storing placeId, we want to get lat/lng so the map updates.
-      // We'll do a *temporary* save with isActive=false to get lat/lng & address from the server.
+      // Temporary save to get lat/lng & address from server
       const data = await saveUserLocation({
         placeId: suggestion.placeId,
-        isActive: false,  // Not finalizing
+        isActive: false,
         refreshToken: refreshTokenState
       })
 
-      // Update local states so user can see the new location on the map & address
       setPlaceId(suggestion.placeId)
       if (data.latitude && data.longitude) {
         setLat(parseFloat(data.latitude))
@@ -207,25 +197,24 @@ export default function OnboardingLocationPage() {
         setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
       }
 
-      // If backend returns a new refresh token, store it
       if (data.refreshToken) {
         setRefreshTokenState(data.refreshToken)
       }
 
-      // Clear search box
+      // Clear the search box
       setSearchTerm('')
     } catch (err) {
-      console.error('Error fetching location details for suggestion:', err)
+      console.error('Error fetching location details:', err)
     }
   }
 
-  // -----------------------------------------------------------
-  //  "Let's Begin" -> final call to saveUserLocation 
-  // -----------------------------------------------------------
+  // ----------------------------------------------------------------
+  //  "Let's Begin" => final call to saveUserLocation
+  // ----------------------------------------------------------------
   const handleLetsBegin = async () => {
     try {
-      // If user selected a place from suggestions, we'll finalize that place
       if (placeId) {
+        // If user selected a new place
         const data = await saveUserLocation({
           placeId,
           isActive: true,
@@ -233,7 +222,7 @@ export default function OnboardingLocationPage() {
         })
         if (data.refreshToken) setRefreshTokenState(data.refreshToken)
       } else {
-        // Otherwise, user never picked a new place => finalize lat/lng
+        // Otherwise finalize lat/lng
         if (lat === null || lng === null) {
           alert('No valid lat/lng found.')
           return
@@ -247,7 +236,6 @@ export default function OnboardingLocationPage() {
         if (data.refreshToken) setRefreshTokenState(data.refreshToken)
       }
 
-      // If the final call returned or we stored a token, set it in cookies & redux
       if (!refreshTokenState) {
         alert('No token returned. Could not finalize.')
         return
@@ -264,12 +252,10 @@ export default function OnboardingLocationPage() {
             onBoardingStatus: decoded.onBoardingStatus,
           })
         )
-        // Fetch user details
         const userData = await getUserDetails()
         dispatch(setUserDetail(userData))
       }
 
-      // Finally navigate to Home
       router.push('/')
     } catch (error) {
       console.error(error)
@@ -277,49 +263,79 @@ export default function OnboardingLocationPage() {
     }
   }
 
-  // -----------------------------------------------------------
-  //  RENDER
-  // -----------------------------------------------------------
+  // ----------------------------------------------------------------
+  //  If lat/lng not ready, show loading
+  // ----------------------------------------------------------------
   if (lat === null || lng === null) {
     return (
-      <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
-        <p>Fetching your current location...</p>
+      <div className="min-h-screen bg-neutral-900 text-brand-white p-4 flex items-center justify-center">
+        <p className="text-gray-300">Fetching your current location...</p>
       </div>
     )
   }
 
+  // ----------------------------------------------------------------
+  //  Final Render: Two-column layout, more hints
+  // ----------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-neutral-900 text-brand-white p-4">
-      <div className="max-w-md mx-auto space-y-4">
-        <h1 className="text-2xl text-brand-gold mb-4">Onboarding - Location</h1>
+    <div className="min-h-screen bg-neutral-900 text-brand-white">
+      <div className="grid grid-cols-1 md:grid-cols-2 max-w-6xl mx-auto">
+        {/* LEFT COLUMN: Intro, instructions */}
+        <div className="flex flex-col justify-center p-6 md:p-12 border-b border-neutral-800 md:border-b-0 md:border-r border-neutral-700">
+          <div className="flex flex-col items-center md:items-start mb-6">
+            <Image
+              src="/logo2.png"
+              alt="Know My Nbr Logo"
+              width={150}
+              height={150}
+              priority
+              className="mb-4"
+            />
+            <h1 className="text-3xl font-bold text-brand-gold text-center md:text-left">
+              Onboarding - Location
+            </h1>
+            <p className="text-sm md:text-base text-gray-400 mb-4 text-center md:text-left">
+              Verify Your Location
+            </p>
+          </div>
 
-        <p className="text-gray-300">
-          We have detected your location. If you want to change it, use the
-          search box below.
-        </p>
+          <p className="hidden md:block text-sm md:text-base leading-6 text-gray-300 mb-4">
+            We've automatically detected your current location. If you're happy with it, 
+            just click “Let’s Begin.” Want a different address? Type it on the right!
+          </p>
 
-        {/* LOCATION SEARCH */}
-        <LocationSearch
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          onSuggestionSelect={handleSuggestionClick}
-        />
+          <p className="text-sm text-gray-400">
+            We use your location to show nearby matches. You can update it anytime.
+          </p>
+        </div>
 
-        <p className="text-gray-300">
-          <strong className="text-brand-gold">Current Address:</strong>{' '}
-          {address || 'No custom address chosen'}
-        </p>
+        {/* RIGHT COLUMN: Search, current address, map, button */}
+        <div className="p-6 md:p-12 flex flex-col gap-4 bg-neutral-800 border border-gray-700">
+          {/* LocationSearch Box */}
+          <LocationSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSuggestionSelect={handleSuggestionClick}
+          />
 
-        {/* MAP */}
-        <LocationMap lat={lat} lng={lng} />
+          {/* Current Address (below search box) */}
+          <div className="text-sm text-gray-300">
+            <span className="font-semibold text-brand-gold">Current Address:</span>{' '}
+            {address || 'No custom address chosen'}
+          </div>
 
-        {/* BUTTON */}
-        <Button
-          className="bg-brand-gold text-black hover:brightness-110"
-          onClick={handleLetsBegin}
-        >
-          Let’s Begin
-        </Button>
+          {/* Map */}
+          <LocationMap lat={lat} lng={lng} />
+
+          <div className="flex flex-col items-center mt-4">
+            <Button
+              className="bg-brand-gold text-black hover:brightness-110 w-full"
+              onClick={handleLetsBegin}
+            >
+              Let’s Begin
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
