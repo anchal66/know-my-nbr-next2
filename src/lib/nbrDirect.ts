@@ -96,7 +96,7 @@ export async function getEthnicities(): Promise<OptionItem[]> {
 
 /** 3. Search users based on cityId & filters */
 interface SearchParams {
-  cityId: number
+  cityId: string
   name?: string
   genderIds?: number[]
   hairColorIds?: number[]

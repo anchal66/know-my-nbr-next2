@@ -39,9 +39,9 @@ export default function NbrDirectPage() {
   // =================== State ===================
   const [citySearchTerm, setCitySearchTerm] = useState('')
   const [citySuggestions, setCitySuggestions] = useState<
-    { cityId: number; label: string }[]
+    { cityId: string; label: string }[]
   >([])
-  const [selectedCityId, setSelectedCityId] = useState<number | null>(null)
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null)
   const [selectedCityName, setSelectedCityName] = useState<string>('')
 
   const [genders, setGenders] = useState<{ id: number; name: string }[]>([])
@@ -144,7 +144,7 @@ export default function NbrDirectPage() {
   // =================== Handlers ===================
 
   /** 5) When user picks a city from suggestions */
-  function handlePickCity(cityId: number, label: string) {
+  function handlePickCity(cityId: string, label: string) {
     setSelectedCityId(cityId)
     setSelectedCityName(label)
     setCitySearchTerm('')
