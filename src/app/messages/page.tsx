@@ -1,4 +1,6 @@
 'use client'
+// Force dynamic to avoid the "missing suspense boundary" error
+export const dynamic = 'force-dynamic'
 
 import React, { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
