@@ -3,7 +3,7 @@
 // Force dynamic if needed
 export const dynamic = 'force-dynamic'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/state/store'
@@ -32,50 +32,43 @@ import FilterModal from '../components/SwipeFilterModal'
 import MatchModal from '../components/MatchModel'
 import { Button } from '@/components/ui/button'
 
+// ----------------------------
+//  Page Component
+// ----------------------------
 export default function HomePage() {
-  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
+  const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
 
-  // -------------------
-  //  STATE
-  // -------------------
-  // Filters & data
+  // 1) Filters & data
   const [filters, setFilters] = useState<SwipeFilters>(defaultFilters)
   const [genders, setGenders] = useState<OptionItem[]>([])
   const [orientations, setOrientations] = useState<OptionItem[]>([])
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [firstLoad, setFirstLoad] = useState(true)
 
-  // Swipe cards
+  // 2) Swipe cards
   const [cards, setCards] = useState<SwipeCardUser[]>([])
-  // We'll track the currently-animating card's ID (to add tailwind classes)
   const [animatingCardId, setAnimatingCardId] = useState<string | null>(null)
   const [animDirection, setAnimDirection] = useState<'left' | 'right' | null>(null)
 
-  // Match modal
-  const [matchModalOpen, setMatchModalOpen] = useState(false)
-  const [matchId, setMatchId] = useState<string | null>(null)
-
-  // For left side tabs
+  // 3) Matches/Chats
   type TabType = 'matches' | 'chats'
   const [activeTab, setActiveTab] = useState<TabType>('matches')
-
-  // Matches list
   const [matchPage, setMatchPage] = useState<any>(null)
   const [matches, setMatches] = useState<any[]>([])
-  // Chats list
   const [chatPage, setChatPage] = useState<any>(null)
   const [chats, setChats] = useState<any[]>([])
-
-  // Loading states
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [loadingChats, setLoadingChats] = useState(false)
 
-  // -------------------
-  //  EFFECTS
-  // -------------------
+  // 4) Match modal
+  const [matchModalOpen, setMatchModalOpen] = useState(false)
+  const [matchId, setMatchId] = useState<string | null>(null)
+
+  // ----------------------------
+  //  Effects
+  // ----------------------------
   useEffect(() => {
-    // Onboarding check
     if (token) {
       if (onBoardingStatus === 'LOCATION') {
         router.push('/onboarding/location')
@@ -99,39 +92,34 @@ export default function HomePage() {
       }
     }
 
-    // Load filters
     const loaded = loadFilters()
     setFilters(loaded)
-
     if (JSON.stringify(loaded) === JSON.stringify(defaultFilters)) {
       setShowFilterModal(true)
     }
 
-    // Fetch Genders & Orientations
     Promise.all([fetchGenders(), fetchOrientations()])
-      .then(([gendersData, orientationsData]) => {
-        setGenders(gendersData)
-        setOrientations(orientationsData)
+      .then(([gData, oData]) => {
+        setGenders(gData)
+        setOrientations(oData)
       })
       .catch((err) => console.error('Error fetching genders/orientations:', err))
 
     setFirstLoad(false)
-
-    // Also fetch left side data
+    // left side data
     fetchInitialMatches()
     fetchInitialChats()
-  }, [token, router])
+  }, [token, onBoardingStatus, router])
 
-  // Whenever filters change (except first load), fetch new swipable users
   useEffect(() => {
     if (!firstLoad) {
       fetchUsersForSwipe()
     }
   }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // -------------------
-  //  FETCHING
-  // -------------------
+  // ----------------------------
+  //  Fetching
+  // ----------------------------
   async function fetchUsersForSwipe() {
     try {
       const data = await fetchSwipableUsers({
@@ -144,7 +132,6 @@ export default function HomePage() {
         size: 10
       })
       setCards(Array.isArray(data) ? data : [])
-      // Reset animation
       setAnimatingCardId(null)
       setAnimDirection(null)
     } catch (err) {
@@ -181,66 +168,12 @@ export default function HomePage() {
     }
   }
 
-  // -------------------
-  //  SWIPE HANDLERS
-  // -------------------
-  async function handleNopeCard() {
-    if (cards.length === 0 || animatingCardId) return
-
-    const topUser = cards[0]
-    // Animate it
-    setAnimatingCardId(topUser.id)
-    setAnimDirection('left')
-
-    // Wait for animation to finish (e.g., ~500ms)
-    setTimeout(async () => {
-      // Record the swipe
-      try {
-        const response = await recordSwipe('DISLIKE', topUser.id)
-        // remove card from array
-        setCards((prev) => prev.slice(1))
-      } catch (err) {
-        console.error('Error recording swipe:', err)
-      }
-      // Reset animation
-      setAnimatingCardId(null)
-      setAnimDirection(null)
-    }, 400)
-  }
-
-  async function handleLikeCard() {
-    if (cards.length === 0 || animatingCardId) return
-
-    const topUser = cards[0]
-    // Animate it
-    setAnimatingCardId(topUser.id)
-    setAnimDirection('right')
-
-    setTimeout(async () => {
-      try {
-        const response = await recordSwipe('LIKE', topUser.id)
-        if (response.match) {
-          setMatchId(response.matchId)
-          setMatchModalOpen(true)
-        }
-        // remove card from array
-        setCards((prev) => prev.slice(1))
-      } catch (err) {
-        console.error('Error recording swipe:', err)
-      }
-      // Reset animation
-      setAnimatingCardId(null)
-      setAnimDirection(null)
-    }, 400)
-  }
-
-  // -------------------
-  //  OTHER HANDLERS
-  // -------------------
+  // ----------------------------
+  //  Handlers
+  // ----------------------------
   function handleOpenFilters() {
     setShowFilterModal(true)
   }
-
   function handleFiltersUpdated(updated: SwipeFilters) {
     if (updated.ageMax < updated.ageMin) {
       updated.ageMax = updated.ageMin + 1
@@ -248,18 +181,14 @@ export default function HomePage() {
     setFilters(updated)
     saveFilters(updated)
   }
-
-  // Clicking a match or chat => navigate to messages
+  function handleTabSwitch(tab: TabType) {
+    setActiveTab(tab)
+  }
   function handleNavigateToMessages(matchId: string) {
     router.push(`/messages?matchId=${matchId}`)
   }
 
-  // Tab Switch
-  function handleTabSwitch(tab: TabType) {
-    setActiveTab(tab)
-  }
-
-  // Matches pagination
+  // Pagination: Matches
   async function handleMatchesNext() {
     if (loadingMatches || !matchPage || matchPage.last) return
     const nextPage = matchPage.number + 1
@@ -271,7 +200,7 @@ export default function HomePage() {
     if (prevPage >= 0) fetchInitialMatches(prevPage)
   }
 
-  // Chats pagination
+  // Pagination: Chats
   async function handleChatsNext() {
     if (loadingChats || !chatPage || chatPage.last) return
     const nextPage = chatPage.number + 1
@@ -283,12 +212,68 @@ export default function HomePage() {
     if (prevPage >= 0) fetchInitialChats(prevPage)
   }
 
-  // -------------------
-  //  RENDER
-  // -------------------
+  // Like / Dislike
+  async function handleNopeCard() {
+    if (cards.length === 0 || animatingCardId) return
+
+    const topUser = cards[0]
+    setAnimatingCardId(topUser.id)
+    setAnimDirection('left')
+
+    setTimeout(async () => {
+      try {
+        await recordSwipe('DISLIKE', topUser.id)
+        setCards((prev) => prev.slice(1))
+      } catch (err) {
+        console.error('Error recording DISLIKE:', err)
+      }
+      setAnimatingCardId(null)
+      setAnimDirection(null)
+    }, 400)
+  }
+
+  async function handleLikeCard() {
+    if (cards.length === 0 || animatingCardId) return
+
+    const topUser = cards[0]
+    setAnimatingCardId(topUser.id)
+    setAnimDirection('right')
+
+    setTimeout(async () => {
+      try {
+        const response = await recordSwipe('LIKE', topUser.id)
+        if (response.match) {
+          setMatchModalOpen(true)
+          setMatchId(response.matchId)
+        }
+        setCards((prev) => prev.slice(1))
+      } catch (err) {
+        console.error('Error recording LIKE:', err)
+      }
+      setAnimatingCardId(null)
+      setAnimDirection(null)
+    }, 400)
+  }
+
+  // ----------------------------
+  //  Render
+  // ----------------------------
   return (
-    <div className="w-full h-screen bg-neutral-900 text-brand-white overflow-hidden">
-      <div className="flex flex-col md:flex-row h-full">
+    /**
+     *  1) We remove h-screen from here.
+     *  2) Create a "wrapper" that fills leftover space between header & footer
+     *     with calc(100vh - 64px (header) - 60px (footer) - some extra?).
+     *     Adjust as needed based on your header/footer heights.
+     */
+    <div
+      className="relative w-full bg-neutral-900 text-brand-white overflow-hidden"
+      style={{
+        // Suppose your header is 64px tall, your footer is about 60px tall:
+        height: 'calc(100vh - 64px - 60px)', 
+      }}
+    >
+      {/* Then we keep your existing flex layout inside this wrapper */}
+      <div className="flex flex-col md:flex-row w-full h-full">
 
         {/* LEFT SIDE (desktop only) */}
         <div className="hidden md:flex md:flex-col w-1/3 h-full bg-neutral-800 border-r border-gray-700 p-4">
@@ -444,7 +429,7 @@ export default function HomePage() {
           </div>
 
           {/* Card Container */}
-          <div className="relative w-full max-w-sm h-[560px] flex items-center justify-center">
+          <div className="relative w-full max-w-sm h-5/6 flex items-center justify-center">
             {/* If no cards => show "No Users Found" */}
             {cards.length === 0 ? (
               <div className="text-center bg-neutral-800 border border-gray-700 p-6 rounded shadow-md w-full h-full flex flex-col justify-center items-center">
@@ -478,7 +463,7 @@ export default function HomePage() {
 
             {/* Bottom LIKE/NOPE buttons */}
             {cards.length > 0 && (
-              <div className="absolute bottom-16 left-0 right-0 flex justify-center items-center gap-5">
+              <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-5">
                 <button
                   onClick={handleNopeCard}
                   className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-red text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
@@ -555,7 +540,10 @@ function SwipeCard({
       `}
     >
       {/* Image area */}
-      <div className="relative flex-1 cursor-pointer" onClick={handleImageClick}>
+      <div
+        className="relative flex-1 cursor-pointer"
+        onClick={handleImageClick}
+      >
         {media.length > 0 ? (
           <Image
             src={media[imageIndex].url}
