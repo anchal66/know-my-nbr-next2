@@ -46,7 +46,7 @@ export function HeaderAddFundsModal({ onClose, onServiceUnavailable}: HeaderAddF
       onClose()
     } catch (err: any) {
       // Check if the error status is 503 => Service Unavailable
-      if (err?.status === 503 || err === 'Payment temporary not accepted reach support@knowmynbr.com') {
+      if (err?.status === 503 || err === 'Payment temporary not accepted') {
         onClose() // close this modal
         onServiceUnavailable() // open the "sorry" modal
       } else {

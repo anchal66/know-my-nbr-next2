@@ -11,6 +11,7 @@ import {
 } from '@/state/slices/walletSlice'
 import HeaderAddFundsModal from '@/components/HeaderAddFundsModal'
 import PaymentServiceUnavailableModal from '@/components/PaymentServiceUnavailableModal'
+import { Mail } from 'lucide-react'
 
 
 export default function MyWalletPage() {
@@ -93,7 +94,7 @@ export default function MyWalletPage() {
         {loading && <div className="text--brand-gold animate-pulse">Loading...</div>}
         {error && (
           <div className="text-red-400 bg-red-900/30 p-2 rounded-md">
-            Error: {error}
+            Error: {error} reach support@knowmynbr.com
           </div>
         )}
 
