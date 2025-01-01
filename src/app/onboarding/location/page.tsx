@@ -15,6 +15,8 @@ import { setUserDetail } from '@/state/slices/userSlice'
 import { setToken } from '@/lib/cookies'
 import { decodeToken } from '@/lib/jwt'
 import { setCredentials } from '@/state/slices/authSlice'
+// Import the new fallback function
+import { getIpLocation } from '@/lib/geo'
 
 // --- UI imports
 import { Button } from '@/components/ui/button'
@@ -145,6 +147,7 @@ export default function OnboardingLocationPage() {
     if (!initialLocationSaved) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          // SUCCESS callback: user allowed geolocation
           const userLat = position.coords.latitude
           const userLng = position.coords.longitude
           setLat(userLat)
@@ -169,8 +172,32 @@ export default function OnboardingLocationPage() {
             console.error('Error saving initial location:', error)
           }
         },
-        (error) => {
+        async (error) => {
+          // ERROR callback: user denied or geolocation not available
           console.error('Geolocation error:', error)
+          try {
+            // Fallback to IP-based location
+            const { lat: ipLat, lng: ipLng } = await getIpLocation()
+            setLat(ipLat)
+            setLng(ipLng)
+
+            // Immediately save user location once
+            const data = await saveUserLocation({
+              latitude: ipLat.toString(),
+              longitude: ipLng.toString(),
+              isActive: true,
+              refreshToken: ''
+            })
+            if (data.name) {
+              setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
+            }
+            if (data.refreshToken) {
+              setRefreshTokenState(data.refreshToken)
+            }
+            setInitialLocationSaved(true)
+          } catch (fallbackError) {
+            console.error('Error using fallback IP-based location:', fallbackError)
+          }
         }
       )
     }
@@ -241,7 +268,10 @@ export default function OnboardingLocationPage() {
         return
       }
 
+      // Set the token in cookies
       setToken(refreshTokenState)
+
+      // Decode to get user details from token
       const decoded = decodeToken(refreshTokenState)
       if (decoded) {
         dispatch(
@@ -252,10 +282,12 @@ export default function OnboardingLocationPage() {
             onBoardingStatus: decoded.onBoardingStatus,
           })
         )
+        // Load user details from server and store
         const userData = await getUserDetails()
         dispatch(setUserDetail(userData))
       }
 
+      // Finally redirect to home
       router.push('/')
     } catch (error) {
       console.error(error)
@@ -264,7 +296,8 @@ export default function OnboardingLocationPage() {
   }
 
   // ----------------------------------------------------------------
-  //  If lat/lng not ready, show loading
+  //  If lat/lng not ready, show "Fetching..." 
+  //  (This includes the time the fallback is retrieving IP-based coords)
   // ----------------------------------------------------------------
   if (lat === null || lng === null) {
     return (
@@ -310,7 +343,7 @@ export default function OnboardingLocationPage() {
         </div>
 
         {/* RIGHT COLUMN: Search, current address, map, button */}
-        <div className="p-6 md:p-12 flex flex-col gap-4 bg-neutral-800 border border-gray-700">
+        <div className="p-6 md:p-12 flex flex-col gap-4 bg-neutral-800 border border-gray-700 mt-10">
           {/* LocationSearch Box */}
           <LocationSearch
             searchTerm={searchTerm}

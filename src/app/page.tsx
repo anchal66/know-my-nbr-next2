@@ -1,5 +1,8 @@
 'use client'
 
+// Force dynamic if needed
+export const dynamic = 'force-dynamic'
+
 import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
@@ -22,21 +25,12 @@ import {
 } from '@/lib/swipeService'
 import { getConversations } from '@/lib/conversations'
 
-import TinderCard from 'react-tinder-card'
-import { FaSlidersH } from 'react-icons/fa'
 import Image from 'next/image'
+import { FaSlidersH } from 'react-icons/fa'
 
 import FilterModal from '../components/SwipeFilterModal'
 import MatchModal from '../components/MatchModel'
 import { Button } from '@/components/ui/button'
-
-/** Local type for react-tinder-card references */
-export interface CustomTinderCardRef {
-  swipe: (dir?: SwipeDirection) => Promise<void>
-  restoreCard: () => Promise<void>
-}
-
-export type SwipeDirection = 'left' | 'right' | 'up' | 'down'
 
 export default function HomePage() {
   const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
@@ -54,7 +48,9 @@ export default function HomePage() {
 
   // Swipe cards
   const [cards, setCards] = useState<SwipeCardUser[]>([])
-  const [currentIndex, setCurrentIndex] = useState(-1)
+  // We'll track the currently-animating card's ID (to add tailwind classes)
+  const [animatingCardId, setAnimatingCardId] = useState<string | null>(null)
+  const [animDirection, setAnimDirection] = useState<'left' | 'right' | null>(null)
 
   // Match modal
   const [matchModalOpen, setMatchModalOpen] = useState(false)
@@ -75,14 +71,11 @@ export default function HomePage() {
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [loadingChats, setLoadingChats] = useState(false)
 
-  // TinderCard refs
-  const childRefs = useRef<React.RefObject<CustomTinderCardRef>[]>([])
-
   // -------------------
   //  EFFECTS
   // -------------------
   useEffect(() => {
-    // Handle onboarding logic
+    // Onboarding check
     if (token) {
       if (onBoardingStatus === 'LOCATION') {
         router.push('/onboarding/location')
@@ -110,7 +103,6 @@ export default function HomePage() {
     const loaded = loadFilters()
     setFilters(loaded)
 
-    // If filters are exactly default => open filter modal on first time
     if (JSON.stringify(loaded) === JSON.stringify(defaultFilters)) {
       setShowFilterModal(true)
     }
@@ -125,7 +117,7 @@ export default function HomePage() {
 
     setFirstLoad(false)
 
-    // Also fetch the lists for left side
+    // Also fetch left side data
     fetchInitialMatches()
     fetchInitialChats()
   }, [token, router])
@@ -152,12 +144,9 @@ export default function HomePage() {
         size: 10
       })
       setCards(Array.isArray(data) ? data : [])
-      setCurrentIndex((data && data.length) ? data.length - 1 : -1)
-
-      // Create references for each card
-      if (Array.isArray(data)) {
-        childRefs.current = data.map(() => React.createRef<CustomTinderCardRef>())
-      }
+      // Reset animation
+      setAnimatingCardId(null)
+      setAnimDirection(null)
     } catch (err) {
       console.error('Failed to fetch swipable users:', err)
       setCards([])
@@ -193,41 +182,61 @@ export default function HomePage() {
   }
 
   // -------------------
-  //  HANDLERS
+  //  SWIPE HANDLERS
   // -------------------
-  const handleSwipe = async (
-    direction: SwipeDirection,
-    user: SwipeCardUser,
-    index: number
-  ) => {
-    if (index !== currentIndex) return // Only handle the top card
+  async function handleNopeCard() {
+    if (cards.length === 0 || animatingCardId) return
 
-    try {
-      const response = await recordSwipe(
-        direction === 'left' ? 'DISLIKE' : 'LIKE',
-        user.id
-      )
-      if (response.match) {
-        // It's a match
-        setMatchId(response.matchId)
-        setMatchModalOpen(true)
+    const topUser = cards[0]
+    // Animate it
+    setAnimatingCardId(topUser.id)
+    setAnimDirection('left')
+
+    // Wait for animation to finish (e.g., ~500ms)
+    setTimeout(async () => {
+      // Record the swipe
+      try {
+        const response = await recordSwipe('DISLIKE', topUser.id)
+        // remove card from array
+        setCards((prev) => prev.slice(1))
+      } catch (err) {
+        console.error('Error recording swipe:', err)
       }
-      // Remove card locally
-      setCards((prev) => prev.filter((c) => c.id !== user.id))
-      setCurrentIndex((prev) => prev - 1)
-    } catch (err) {
-      console.error('Error recording swipe:', err)
-    }
+      // Reset animation
+      setAnimatingCardId(null)
+      setAnimDirection(null)
+    }, 400)
   }
 
-  const swipe = async (dir: 'left' | 'right') => {
-    if (currentIndex < 0) return
-    const cardRef = childRefs.current[currentIndex]
-    if (cardRef?.current) {
-      await cardRef.current.swipe(dir) // triggers handleSwipe
-    }
+  async function handleLikeCard() {
+    if (cards.length === 0 || animatingCardId) return
+
+    const topUser = cards[0]
+    // Animate it
+    setAnimatingCardId(topUser.id)
+    setAnimDirection('right')
+
+    setTimeout(async () => {
+      try {
+        const response = await recordSwipe('LIKE', topUser.id)
+        if (response.match) {
+          setMatchId(response.matchId)
+          setMatchModalOpen(true)
+        }
+        // remove card from array
+        setCards((prev) => prev.slice(1))
+      } catch (err) {
+        console.error('Error recording swipe:', err)
+      }
+      // Reset animation
+      setAnimatingCardId(null)
+      setAnimDirection(null)
+    }, 400)
   }
 
+  // -------------------
+  //  OTHER HANDLERS
+  // -------------------
   function handleOpenFilters() {
     setShowFilterModal(true)
   }
@@ -240,7 +249,7 @@ export default function HomePage() {
     saveFilters(updated)
   }
 
-  // Clicking a match or chat => navigate to messages with that match
+  // Clicking a match or chat => navigate to messages
   function handleNavigateToMessages(matchId: string) {
     router.push(`/messages?matchId=${matchId}`)
   }
@@ -286,19 +295,25 @@ export default function HomePage() {
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
             <button
-              className={`px-4 py-2 rounded-md font-semibold transition-colors ${activeTab === 'matches'
+              className={`
+                px-4 py-2 rounded-md font-semibold transition-colors
+                ${activeTab === 'matches'
                   ? 'bg-brand-gold text-black'
                   : 'text-gray-300 hover:bg-neutral-700'
-                }`}
+                }
+              `}
               onClick={() => handleTabSwitch('matches')}
             >
               Matches
             </button>
             <button
-              className={`px-4 py-2 rounded-md font-semibold transition-colors ${activeTab === 'chats'
+              className={`
+                px-4 py-2 rounded-md font-semibold transition-colors
+                ${activeTab === 'chats'
                   ? 'bg-brand-gold text-black'
                   : 'text-gray-300 hover:bg-neutral-700'
-                }`}
+                }
+              `}
               onClick={() => handleTabSwitch('chats')}
             >
               Chats
@@ -416,20 +431,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: SWIPE AREA */}
+        {/* RIGHT SIDE: Cards Area */}
         <div className="flex-1 flex flex-col items-center justify-center relative">
+          {/* Filter gear button in top-right */}
+          <div className="absolute top-2 right-2 z-10">
+            <button
+              onClick={handleOpenFilters}
+              className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg transition-colors hover:bg-neutral-700"
+            >
+              <FaSlidersH size={20} className="text-gray-300" />
+            </button>
+          </div>
+
           {/* Card Container */}
           <div className="relative w-full max-w-sm h-[560px] flex items-center justify-center">
-            {/* Filter gear button OVER the card, top-right */}
-            <div className="absolute top-2 right-2 z-10">
-              <button
-                onClick={handleOpenFilters}
-                className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg transition-colors hover:bg-neutral-700"
-              >
-                <FaSlidersH size={20} className="text-gray-300" />
-              </button>
-            </div>
-
             {/* If no cards => show "No Users Found" */}
             {cards.length === 0 ? (
               <div className="text-center bg-neutral-800 border border-gray-700 p-6 rounded shadow-md w-full h-full flex flex-col justify-center items-center">
@@ -448,33 +463,30 @@ export default function HomePage() {
                 </Button>
               </div>
             ) : (
-              // Tinder Cards
-              <div className="relative w-full h-full">
-                {cards.map((user, index) => (
-                  <TinderCard
-                    ref={childRefs.current[index]}
-                    key={`${user.id}-${index}`}
-                    className="absolute w-full h-full"
-                    onSwipe={(dir) => handleSwipe(dir as SwipeDirection, user, index)}
-                    preventSwipe={['up', 'down']}
-                  >
-                    <SwipeCard user={user} />
-                  </TinderCard>
+              // Show the top card only (cards[0])
+              <div className="relative w-full h-full overflow-hidden">
+                {cards.slice(0, 1).map((user) => (
+                  <SwipeCard
+                    key={user.id}
+                    user={user}
+                    isAnimating={animatingCardId === user.id}
+                    animDirection={animDirection}
+                  />
                 ))}
               </div>
             )}
 
-            {/* Bottom LIKE/NOPE buttons (over info area) */}
+            {/* Bottom LIKE/NOPE buttons */}
             {cards.length > 0 && (
               <div className="absolute bottom-16 left-0 right-0 flex justify-center items-center gap-5">
                 <button
-                  onClick={() => swipe('left')}
+                  onClick={handleNopeCard}
                   className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-red text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
                 >
                   NOPE
                 </button>
                 <button
-                  onClick={() => swipe('right')}
+                  onClick={handleLikeCard}
                   className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-gold text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
                 >
                   LIKE
@@ -504,13 +516,22 @@ export default function HomePage() {
   )
 }
 
-/** Card component with multiple images + truncated bio. */
-function SwipeCard({ user }: { user: SwipeCardUser }) {
+// ---------------------------
+// SWIPE CARD (Single card)
+// ---------------------------
+function SwipeCard({
+  user,
+  isAnimating,
+  animDirection
+}: {
+  user: SwipeCardUser
+  isAnimating: boolean
+  animDirection: 'left' | 'right' | null
+}) {
   const router = useRouter()
   const [imageIndex, setImageIndex] = useState(0)
-  // If you have user.media from the backend, rename accordingly:
-  const media = (user as any).media || []
 
+  const media = (user as any).media || []
   const age = calculateAge(user.dateOfBirth)
 
   const handleImageClick = () => {
@@ -520,20 +541,27 @@ function SwipeCard({ user }: { user: SwipeCardUser }) {
   }
 
   const handleNameClick = () => {
-    // Navigate to /{username}
     router.push(`/${user.name}`)
   }
 
   return (
-    <div className="w-full h-full rounded-xl bg-neutral-800 text-brand-white shadow-lg overflow-hidden flex flex-col border border-gray-700">
+    <div
+      className={`
+        w-full h-full rounded-xl bg-neutral-800 text-brand-white
+        shadow-lg overflow-hidden flex flex-col border border-gray-700
+        transition-transform duration-300
+        ${isAnimating && animDirection === 'left' ? 'translate-x-[-100vw] opacity-0' : ''}
+        ${isAnimating && animDirection === 'right' ? 'translate-x-[100vw] opacity-0' : ''}
+      `}
+    >
       {/* Image area */}
-      <div className="relative flex-1" onClick={handleImageClick}>
+      <div className="relative flex-1 cursor-pointer" onClick={handleImageClick}>
         {media.length > 0 ? (
           <Image
             src={media[imageIndex].url}
             alt="User"
             fill
-            className="object-cover cursor-pointer"
+            className="object-cover"
           />
         ) : (
           <div className="w-full h-full bg-neutral-700 flex items-center justify-center">

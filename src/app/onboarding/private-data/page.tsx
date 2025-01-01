@@ -366,7 +366,9 @@ export default function OnboardingPrivateDataPage() {
               Private Data
             </h2>
             <p className="text-center text-sm text-gray-400">
-              (Visible only to your approved followers)
+            Your Privacy is Our Priority
+
+We prioritize your privacy and securely store your personal information using advanced AES encryption. Rest assured, only your followers on our platform can access your details. Your data is never shared or misused in any way.
             </p>
 
             {/* =================== CONTACT NUMBERS =================== */}
@@ -380,7 +382,7 @@ export default function OnboardingPrivateDataPage() {
                   {/* PHONE INPUT */}
                   <div className="space-y-1">
                     <label className="text-sm text-gray-300">
-                      Phone Number <span className="text-xs">(with Country Code)</span>
+                      Phone Number 
                     </label>
                     <PhoneInput
                       country={defaultCountry}
@@ -415,7 +417,7 @@ export default function OnboardingPrivateDataPage() {
                   {/* MESSAGING APPS */}
                   <div className="space-y-2">
                     <p className="text-sm text-gray-300">
-                      Messaging Apps (Check any that apply):
+                      Messaging Apps (Check apps which are associated with your number):
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {messagingApps.map((app) => (
