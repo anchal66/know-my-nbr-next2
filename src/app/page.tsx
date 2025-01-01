@@ -27,31 +27,33 @@ import { getConversations } from '@/lib/conversations'
 
 import Image from 'next/image'
 import { FaSlidersH } from 'react-icons/fa'
+import { Button } from '@/components/ui/button'
+
+// Import some icons from lucide or your preferred icon library
+import { ChevronLeft, ChevronRight, X, Heart } from 'lucide-react'
 
 import FilterModal from '../components/SwipeFilterModal'
 import MatchModal from '../components/MatchModel'
-import { Button } from '@/components/ui/button'
 
-// ----------------------------
-//  Page Component
-// ----------------------------
 export default function HomePage() {
   const router = useRouter()
   const { onBoardingStatus, token } = useSelector((state: RootState) => state.auth)
 
-  // 1) Filters & data
+  // ----------------------------------------------------------------
+  //  States
+  // ----------------------------------------------------------------
   const [filters, setFilters] = useState<SwipeFilters>(defaultFilters)
   const [genders, setGenders] = useState<OptionItem[]>([])
   const [orientations, setOrientations] = useState<OptionItem[]>([])
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [firstLoad, setFirstLoad] = useState(true)
 
-  // 2) Swipe cards
+  // Cards
   const [cards, setCards] = useState<SwipeCardUser[]>([])
   const [animatingCardId, setAnimatingCardId] = useState<string | null>(null)
   const [animDirection, setAnimDirection] = useState<'left' | 'right' | null>(null)
 
-  // 3) Matches/Chats
+  // Left-side matches/chats
   type TabType = 'matches' | 'chats'
   const [activeTab, setActiveTab] = useState<TabType>('matches')
   const [matchPage, setMatchPage] = useState<any>(null)
@@ -61,35 +63,21 @@ export default function HomePage() {
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [loadingChats, setLoadingChats] = useState(false)
 
-  // 4) Match modal
+  // Match modal
   const [matchModalOpen, setMatchModalOpen] = useState(false)
   const [matchId, setMatchId] = useState<string | null>(null)
 
-  // ----------------------------
+  // ----------------------------------------------------------------
   //  Effects
-  // ----------------------------
+  // ----------------------------------------------------------------
   useEffect(() => {
+    // Onboarding check
     if (token) {
-      if (onBoardingStatus === 'LOCATION') {
-        router.push('/onboarding/location')
-        return
-      }
-      if (onBoardingStatus === 'MEDIA_UPLOADED') {
-        router.push('/onboarding/media')
-        return
-      }
-      if (onBoardingStatus === 'PRIVATE_CONTACT') {
-        router.push('/onboarding/private-data')
-        return
-      }
-      if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') {
-        router.push('/onboarding/profile')
-        return
-      }
-      if (onBoardingStatus !== 'FINISHED') {
-        router.push('/onboarding/profile')
-        return
-      }
+      if (onBoardingStatus === 'LOCATION') router.push('/onboarding/location')
+      else if (onBoardingStatus === 'MEDIA_UPLOADED') router.push('/onboarding/media')
+      else if (onBoardingStatus === 'PRIVATE_CONTACT') router.push('/onboarding/private-data')
+      else if (onBoardingStatus === 'EMPTY' || onBoardingStatus === 'PROFILE') router.push('/onboarding/profile')
+      else if (onBoardingStatus !== 'FINISHED') router.push('/onboarding/profile')
     }
 
     const loaded = loadFilters()
@@ -98,6 +86,7 @@ export default function HomePage() {
       setShowFilterModal(true)
     }
 
+    // Fetch genders/orientations
     Promise.all([fetchGenders(), fetchOrientations()])
       .then(([gData, oData]) => {
         setGenders(gData)
@@ -106,7 +95,8 @@ export default function HomePage() {
       .catch((err) => console.error('Error fetching genders/orientations:', err))
 
     setFirstLoad(false)
-    // left side data
+
+    // Left side data
     fetchInitialMatches()
     fetchInitialChats()
   }, [token, onBoardingStatus, router])
@@ -117,9 +107,9 @@ export default function HomePage() {
     }
   }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ----------------------------
+  // ----------------------------------------------------------------
   //  Fetching
-  // ----------------------------
+  // ----------------------------------------------------------------
   async function fetchUsersForSwipe() {
     try {
       const data = await fetchSwipableUsers({
@@ -168,9 +158,9 @@ export default function HomePage() {
     }
   }
 
-  // ----------------------------
+  // ----------------------------------------------------------------
   //  Handlers
-  // ----------------------------
+  // ----------------------------------------------------------------
   function handleOpenFilters() {
     setShowFilterModal(true)
   }
@@ -181,9 +171,11 @@ export default function HomePage() {
     setFilters(updated)
     saveFilters(updated)
   }
+
   function handleTabSwitch(tab: TabType) {
     setActiveTab(tab)
   }
+
   function handleNavigateToMessages(matchId: string) {
     router.push(`/messages?matchId=${matchId}`)
   }
@@ -215,7 +207,6 @@ export default function HomePage() {
   // Like / Dislike
   async function handleNopeCard() {
     if (cards.length === 0 || animatingCardId) return
-
     const topUser = cards[0]
     setAnimatingCardId(topUser.id)
     setAnimDirection('left')
@@ -234,7 +225,6 @@ export default function HomePage() {
 
   async function handleLikeCard() {
     if (cards.length === 0 || animatingCardId) return
-
     const topUser = cards[0]
     setAnimatingCardId(topUser.id)
     setAnimDirection('right')
@@ -255,27 +245,20 @@ export default function HomePage() {
     }, 400)
   }
 
-  // ----------------------------
+  // ----------------------------------------------------------------
   //  Render
-  // ----------------------------
+  // ----------------------------------------------------------------
   return (
-    /**
-     *  1) We remove h-screen from here.
-     *  2) Create a "wrapper" that fills leftover space between header & footer
-     *     with calc(100vh - 64px (header) - 60px (footer) - some extra?).
-     *     Adjust as needed based on your header/footer heights.
-     */
     <div
       className="relative w-full bg-neutral-900 text-brand-white overflow-hidden"
       style={{
-        // Suppose your header is 64px tall, your footer is about 60px tall:
-        height: 'calc(100vh - 64px - 60px)', 
+        // Adjust these if your header/footer are different heights
+        height: 'calc(100vh - 64px - 60px)',
       }}
     >
-      {/* Then we keep your existing flex layout inside this wrapper */}
       <div className="flex flex-col md:flex-row w-full h-full">
 
-        {/* LEFT SIDE (desktop only) */}
+        {/* LEFT (Desktop) */}
         <div className="hidden md:flex md:flex-col w-1/3 h-full bg-neutral-800 border-r border-gray-700 p-4">
           {/* Tabs */}
           <div className="flex gap-4 mb-4">
@@ -305,13 +288,11 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* Content for each tab */}
+          {/* Tab content */}
           <div className="flex-1 overflow-y-auto">
             {activeTab === 'matches' ? (
               <div>
-                {loadingMatches && (
-                  <p className="text-sm text-gray-400">Loading matches...</p>
-                )}
+                {loadingMatches && <p className="text-sm text-gray-400">Loading matches...</p>}
                 {matches.map((m) => {
                   const firstMedia = m.media?.[0]?.url || '/no-image.png'
                   return (
@@ -329,9 +310,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-brand-white">
-                          {m.name}
-                        </p>
+                        <p className="font-semibold text-brand-white">{m.name}</p>
                         <p className="text-xs text-gray-400 line-clamp-1">
                           {m.bio || 'No bio'}
                         </p>
@@ -342,9 +321,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div>
-                {loadingChats && (
-                  <p className="text-sm text-gray-400">Loading chats...</p>
-                )}
+                {loadingChats && <p className="text-sm text-gray-400">Loading chats...</p>}
                 {chats.map((c) => {
                   const lastMsg = c.recentMessages?.[0]
                   return (
@@ -353,17 +330,13 @@ export default function HomePage() {
                       className="flex flex-col mb-3 p-2 rounded hover:bg-neutral-700 cursor-pointer"
                       onClick={() => handleNavigateToMessages(c.matchId)}
                     >
-                      <p className="font-semibold text-brand-white">
-                        {c.name}
-                      </p>
+                      <p className="font-semibold text-brand-white">{c.name}</p>
                       {lastMsg ? (
                         <span className="text-xs text-gray-400 truncate">
                           {lastMsg.content}
                         </span>
                       ) : (
-                        <span className="text-xs text-brand-gold">
-                          No messages yet
-                        </span>
+                        <span className="text-xs text-brand-gold">No messages yet</span>
                       )}
                     </div>
                   )
@@ -416,13 +389,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: Cards Area */}
+        {/* RIGHT (Swipes) */}
         <div className="flex-1 flex flex-col items-center justify-center relative">
-          {/* Filter gear button in top-right */}
-          <div className="absolute top-2 right-2 z-10">
+          {/* Filter icon */}
+          <div className="absolute top-3 right-3 z-10">
             <button
               onClick={handleOpenFilters}
-              className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg transition-colors hover:bg-neutral-700"
+              className="bg-neutral-800 rounded-full p-3 border border-gray-600 shadow hover:shadow-lg hover:bg-neutral-700 transition-colors"
             >
               <FaSlidersH size={20} className="text-gray-300" />
             </button>
@@ -430,12 +403,9 @@ export default function HomePage() {
 
           {/* Card Container */}
           <div className="relative w-full max-w-sm h-5/6 flex items-center justify-center">
-            {/* If no cards => show "No Users Found" */}
             {cards.length === 0 ? (
               <div className="text-center bg-neutral-800 border border-gray-700 p-6 rounded shadow-md w-full h-full flex flex-col justify-center items-center">
-                <h2 className="text-xl font-bold text-brand-gold mb-2">
-                  No Users Found
-                </h2>
+                <h2 className="text-xl font-bold text-brand-gold mb-2">No Users Found</h2>
                 <p className="text-sm text-gray-400 mb-4">
                   Try adjusting your filters or check back later.
                 </p>
@@ -448,7 +418,6 @@ export default function HomePage() {
                 </Button>
               </div>
             ) : (
-              // Show the top card only (cards[0])
               <div className="relative w-full h-full overflow-hidden">
                 {cards.slice(0, 1).map((user) => (
                   <SwipeCard
@@ -461,20 +430,36 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Bottom LIKE/NOPE buttons */}
+            {/* Buttons near bottom */}
             {cards.length > 0 && (
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-5">
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-8">
                 <button
                   onClick={handleNopeCard}
-                  className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-red text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
+                  className="
+                    w-14 h-14 rounded-full bg-neutral-700
+                    flex items-center justify-center
+                    text-red-500 hover:text-red-300
+                    border border-gray-600
+                    shadow hover:shadow-lg
+                    transition-transform hover:scale-110
+                  "
+                  title="Nope"
                 >
-                  NOPE
+                  <X className="w-6 h-6" />
                 </button>
                 <button
                   onClick={handleLikeCard}
-                  className="p-8 bg-neutral-800 w-14 h-14 rounded-full flex items-center justify-center shadow hover:shadow-lg text-brand-gold text-lg font-semibold transition-transform hover:scale-105 border border-gray-600"
+                  className="
+                    w-14 h-14 rounded-full bg-neutral-700
+                    flex items-center justify-center
+                    text-green-400 hover:text-green-300
+                    border border-gray-600
+                    shadow hover:shadow-lg
+                    transition-transform hover:scale-110
+                  "
+                  title="Like"
                 >
-                  LIKE
+                  <Heart className="w-6 h-6" />
                 </button>
               </div>
             )}
@@ -502,7 +487,7 @@ export default function HomePage() {
 }
 
 // ---------------------------
-// SWIPE CARD (Single card)
+// SWIPE CARD
 // ---------------------------
 function SwipeCard({
   user,
@@ -515,18 +500,30 @@ function SwipeCard({
 }) {
   const router = useRouter()
   const [imageIndex, setImageIndex] = useState(0)
-
-  const media = (user as any).media || []
+  const media = user.media || []
   const age = calculateAge(user.dateOfBirth)
 
-  const handleImageClick = () => {
-    if (media.length > 0) {
-      setImageIndex((prev) => (prev + 1) % media.length)
+  // Next/prev image
+  function handleNextImage() {
+    if (media.length < 2) return
+    setImageIndex((prev) => (prev + 1) % media.length)
+  }
+  function handlePrevImage(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (media.length < 2) return
+    setImageIndex((prev) => (prev - 1 + media.length) % media.length)
+  }
+
+  function handleImageClick() {
+    // If you want to cycle images on click, keep this
+    if (media.length > 1) {
+      handleNextImage()
     }
   }
 
-  const handleNameClick = () => {
-    router.push(`/${user.name}`)
+  function handleNameClick() {
+    // Go to /username
+    router.push(`/${user.username}`)
   }
 
   return (
@@ -534,16 +531,44 @@ function SwipeCard({
       className={`
         w-full h-full rounded-xl bg-neutral-800 text-brand-white
         shadow-lg overflow-hidden flex flex-col border border-gray-700
+        relative
         transition-transform duration-300
         ${isAnimating && animDirection === 'left' ? 'translate-x-[-100vw] opacity-0' : ''}
         ${isAnimating && animDirection === 'right' ? 'translate-x-[100vw] opacity-0' : ''}
       `}
     >
       {/* Image area */}
-      <div
-        className="relative flex-1 cursor-pointer"
-        onClick={handleImageClick}
-      >
+      <div className="relative flex-1 cursor-pointer" onClick={handleImageClick}>
+        {/* ARROWS for prev/next */}
+        {media.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevImage}
+              className="
+                absolute left-2 top-1/2 -translate-y-1/2
+                text-white opacity-80 hover:opacity-100
+                bg-black/30 rounded-full p-2
+                transition
+              "
+              title="Previous image"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="
+                absolute right-2 top-1/2 -translate-y-1/2
+                text-white opacity-80 hover:opacity-100
+                bg-black/30 rounded-full p-2
+                transition
+              "
+              title="Next image"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+
         {media.length > 0 ? (
           <Image
             src={media[imageIndex].url}
@@ -559,20 +584,18 @@ function SwipeCard({
       </div>
 
       {/* Info */}
-      <div className="p-3 relative">
+      <div className="p-3">
         <h3
           className="text-base font-semibold cursor-pointer hover:underline truncate"
           onClick={handleNameClick}
         >
           {user.name}, {age}
         </h3>
-        <p className="text-sm text-gray-400 line-clamp-1 overflow-ellipsis overflow-hidden">
+        <p className="text-sm text-gray-400 line-clamp-1">
           {user.bio || 'No bio available.'}
         </p>
         {typeof user.distance === 'number' && (
-          <p className="text-xs text-gray-500 mt-1">
-            ~{user.distance} km away
-          </p>
+          <p className="text-xs text-gray-500 mt-1">~{user.distance} km away</p>
         )}
       </div>
     </div>
