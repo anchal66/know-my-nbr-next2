@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { DesktopNav } from './DesktopNav'
 import { CitySelector } from './CitySelector'
 import { HeaderAddFundsModal } from '../HeaderAddFundsModal'
+import PaymentServiceUnavailableModal from '../PaymentServiceUnavailableModal'
 import { BottomNav } from './BottomNav'
 import { getUserDetails } from '@/lib/user'
 import { setUserDetail } from '@/state/slices/userSlice'
@@ -23,7 +24,10 @@ export function Header() {
   const { balance } = useSelector((state: RootState) => state.wallet)
   const isLoggedIn = !!token && !!username
 
+  // State to toggle Add Funds Modal
   const [showAddFundsModal, setShowAddFundsModal] = useState(false)
+  // State to toggle Payment Service Unavailable Modal
+  const [showServiceUnavailableModal, setShowServiceUnavailableModal] = useState(false)
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -41,6 +45,7 @@ export function Header() {
     }
   }
 
+  // Additional fetchWalletBalance if needed
   useEffect(() => {
     if (isLoggedIn) {
       dispatch(fetchWalletBalance())
@@ -51,6 +56,12 @@ export function Header() {
     removeToken()
     dispatch(logout())
     window.location.href = '/login'
+  }
+
+  // If the payment service is unavailable
+  const handleServiceUnavailable = () => {
+    setShowAddFundsModal(false)
+    setShowServiceUnavailableModal(true)
   }
 
   return (
@@ -134,7 +145,17 @@ export function Header() {
 
       {/* Add Funds Modal */}
       {showAddFundsModal && (
-        <HeaderAddFundsModal onClose={() => setShowAddFundsModal(false)} />
+        <HeaderAddFundsModal
+          onClose={() => setShowAddFundsModal(false)}
+          onServiceUnavailable={handleServiceUnavailable}
+        />
+      )}
+
+      {/* Payment Service Unavailable Modal */}
+      {showServiceUnavailableModal && (
+        <PaymentServiceUnavailableModal
+          onClose={() => setShowServiceUnavailableModal(false)}
+        />
       )}
     </>
   )
