@@ -295,6 +295,7 @@ export default function OnboardingProfilePage() {
             )}
 
             {/* Name */}
+            <label className="block text-sm mb-1 text-gray-400">Enter your Display Name:</label>
             <Input
               placeholder="Name"
               value={name}
@@ -304,15 +305,16 @@ export default function OnboardingProfilePage() {
             />
 
             {/* Bio as a TextArea */}
+            <label className="block text-sm mb-1 text-gray-400">Type in about yourself:</label>
             <textarea
-              placeholder="Tell us about yourself (≥ 50 characters). Emojis are welcome! 🥳"
+              placeholder="Tell us about yourself (greater than 50 characters). Emojis preferred 🥳"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={4}
               className="mb-2 w-full rounded-md border border-gray-700 bg-neutral-700 text-gray-200 p-2 outline-none focus:ring-1 focus:ring-brand-gold"
             />
-
+            <label className="block text-sm mb-1 text-gray-400">Enter your DOB:</label>
             {/* Date of Birth */}
             <Input
               type="date"
@@ -324,6 +326,7 @@ export default function OnboardingProfilePage() {
             />
 
             {/* Gender */}
+            <label className="block text-sm mb-1 text-gray-400">Select your Gender:</label>
             <Select onValueChange={(val) => setGenderId(Number(val))}>
               <SelectTrigger className="mb-2 bg-neutral-700 border border-gray-700 text-gray-200">
                 <SelectValue placeholder="Select Gender" />
@@ -342,6 +345,7 @@ export default function OnboardingProfilePage() {
             </Select>
 
             {/* Orientation */}
+            <label className="block text-sm mb-1 text-gray-400">Select your Orientation:</label>
             <Select onValueChange={(val) => setOrientationId(Number(val))}>
               <SelectTrigger className="mb-2 bg-neutral-700 border border-gray-700 text-gray-200">
                 <SelectValue placeholder="Select Orientation" />
@@ -360,6 +364,7 @@ export default function OnboardingProfilePage() {
             </Select>
 
             {/* Ethnicity */}
+            <label className="block text-sm mb-1 text-gray-400">Select your Ethnicity:</label>
             <Select onValueChange={(val) => setEthnicityId(Number(val))}>
               <SelectTrigger className="mb-2 bg-neutral-700 border border-gray-700 text-gray-200">
                 <SelectValue placeholder="Select Ethnicity" />
@@ -378,6 +383,7 @@ export default function OnboardingProfilePage() {
             </Select>
 
             {/* Height */}
+            <label className="block text-sm mb-1 text-gray-400">Enter your Height in cm:</label>
             <Input
               type="number"
               placeholder="Height (cm)"
@@ -391,6 +397,7 @@ export default function OnboardingProfilePage() {
             />
 
             {/* Hair Color */}
+            <label className="block text-sm mb-1 text-gray-400">Select your haircolor:</label>
             <Select onValueChange={(val) => setHairColorId(Number(val))}>
               <SelectTrigger className="mb-2 bg-neutral-700 border border-gray-700 text-gray-200">
                 <SelectValue placeholder="Select Hair Color" />
@@ -409,6 +416,7 @@ export default function OnboardingProfilePage() {
             </Select>
 
             {/* Nationality */}
+            <label className="block text-sm mb-1 text-gray-400">Select your Nationality:</label>
             <Select onValueChange={(val) => setNationalityId(Number(val))}>
               <SelectTrigger className="mb-2 bg-neutral-700 border border-gray-700 text-gray-200">
                 <SelectValue placeholder="Select Nationality" />
@@ -428,7 +436,7 @@ export default function OnboardingProfilePage() {
 
             {/* Multi-Select Languages with Searchable Popover */}
             <div className="mb-6">
-              <p className="text-sm text-gray-400 mb-1">Languages (multi-select):</p>
+              <p className="text-sm text-gray-400 mb-1">Choose Languages (multi-select):</p>
 
               <Popover open={isLanguagesOpen} onOpenChange={setIsLanguagesOpen}>
                 <PopoverTrigger asChild>

@@ -35,16 +35,25 @@ export interface OptionItem {
 }
 
 export interface SwipeCardUser {
-  id: string
-  name: string
-  bio: string
-  dateOfBirth: string
+  id: string,
+  username: string,
+  name: string,
+  bio: string,
+  dateOfBirth: string,
   distance: number,
   gender: string,
   orientation: string,
   ethnicity: string,
   heightCm: string,
-  hairColor: string
+  hairColor: string,
+  media: {
+    id: string
+    type: string
+    url: string
+    isVerified: boolean
+    isWatermarked: boolean
+    orderNo: number
+  }[]
 }
 
 export function calculateAge(dateOfBirth: string) {

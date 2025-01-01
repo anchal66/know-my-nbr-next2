@@ -9,10 +9,9 @@ import api from '@/lib/api'
 // Transaction details from the backend
 export interface Transaction {
   id?: number
-  date?: string
+  createdAt?: string
   description?: string
   amount?: number
-  balanceAfterTransaction?: number
 }
 
 // Optional interface if your API returns paginated transactions

@@ -8,9 +8,10 @@ import { AppDispatch } from '@/state/store'
 
 interface HeaderAddFundsModalProps {
   onClose: () => void
+  onServiceUnavailable: () => void
 }
 
-export function HeaderAddFundsModal({ onClose }: HeaderAddFundsModalProps) {
+export function HeaderAddFundsModal({ onClose, onServiceUnavailable}: HeaderAddFundsModalProps) {
   const dispatch = useDispatch<AppDispatch>()
   const [amount, setAmount] = useState<number>(0)
   const [loading, setLoading] = useState(false)
@@ -44,7 +45,13 @@ export function HeaderAddFundsModal({ onClose }: HeaderAddFundsModalProps) {
 
       onClose()
     } catch (err: any) {
-      setError(err)
+      // Check if the error status is 503 => Service Unavailable
+      if (err?.status === 503 || err === 'Payment temporary not accepted') {
+        onClose() // close this modal
+        onServiceUnavailable() // open the "sorry" modal
+      } else {
+        setError(err.message ?? 'Something went wrong.')
+      }
     } finally {
       setLoading(false)
     }
@@ -87,3 +94,4 @@ export function HeaderAddFundsModal({ onClose }: HeaderAddFundsModalProps) {
     </div>
   )  
 }
+export default HeaderAddFundsModal

@@ -45,10 +45,8 @@ interface LocationData {
     placeId?: string
     latitude?: string
     longitude?: string
-    name?: string
-    city?: string
     isActive: boolean
-    refreshToken?: string
+    notShow?: boolean
   }
 
 export async function submitOnboardingProfile(data: OnboardingProfileData) {
