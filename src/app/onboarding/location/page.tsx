@@ -159,7 +159,7 @@ export default function OnboardingLocationPage() {
               latitude: userLat.toString(),
               longitude: userLng.toString(),
               isActive: true,
-              refreshToken: ''
+              notShow: true
             })
             if (data.name) {
               setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
@@ -186,7 +186,6 @@ export default function OnboardingLocationPage() {
               latitude: ipLat.toString(),
               longitude: ipLng.toString(),
               isActive: true,
-              refreshToken: ''
             })
             if (data.name) {
               setAddress(data.name + (data.city?.name ? `, ${data.city.name}` : ''))
@@ -212,7 +211,6 @@ export default function OnboardingLocationPage() {
       const data = await saveUserLocation({
         placeId: suggestion.placeId,
         isActive: false,
-        refreshToken: refreshTokenState
       })
 
       setPlaceId(suggestion.placeId)
@@ -244,8 +242,7 @@ export default function OnboardingLocationPage() {
         // If user selected a new place
         const data = await saveUserLocation({
           placeId,
-          isActive: true,
-          refreshToken: refreshTokenState
+          isActive: true
         })
         if (data.refreshToken) setRefreshTokenState(data.refreshToken)
       } else {
@@ -257,8 +254,7 @@ export default function OnboardingLocationPage() {
         const data = await saveUserLocation({
           latitude: lat.toString(),
           longitude: lng.toString(),
-          isActive: true,
-          refreshToken: refreshTokenState
+          isActive: true
         })
         if (data.refreshToken) setRefreshTokenState(data.refreshToken)
       }

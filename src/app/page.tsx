@@ -34,6 +34,7 @@ import { ChevronLeft, ChevronRight, X, Heart } from 'lucide-react'
 
 import FilterModal from '../components/SwipeFilterModal'
 import MatchModal from '../components/MatchModel'
+import Link from 'next/link'
 
 export default function HomePage() {
   const router = useRouter()
@@ -522,7 +523,7 @@ function SwipeCard({
   }
 
   function handleNameClick() {
-    // Go to /username
+    console.log("click")
     router.push(`/${user.username}`)
   }
 
@@ -587,13 +588,16 @@ function SwipeCard({
       <div className="p-3">
         <h3
           className="text-base font-semibold cursor-pointer hover:underline truncate"
-          onClick={handleNameClick}
         >
+          <Link href={`/${user.username}`}>
           {user.name}, {age}
+          </Link>
         </h3>
-        <p className="text-sm text-gray-400 line-clamp-1">
-          {user.bio || 'No bio available.'}
+        <Link href={`/${user.username}`}>
+        <p className="text-sm text-gray-400 line-clamp-1" onClick={handleNameClick}>
+            {'@' + user.username || 'No Username available.'}
         </p>
+        </Link>
         {typeof user.distance === 'number' && (
           <p className="text-xs text-gray-500 mt-1">~{user.distance} km away</p>
         )}
