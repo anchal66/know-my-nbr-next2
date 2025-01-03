@@ -68,8 +68,8 @@ export interface UserDetailResponse {
   websites: Website[]
   media: MediaItem[]
   locations: LocationItem[]
-  followers: FollowResponse[]
-  follows: FollowResponse[]
+  followersCount: number
+  followsCount: number
   subscriptionType: Subscription
   matchesCount: number
   heartReceivedCount: number

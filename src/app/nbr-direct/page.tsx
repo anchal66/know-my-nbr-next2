@@ -11,7 +11,8 @@ import FilterModal from '@/components/FilterModal'
 import {
   searchUsers,
   searchCitiesWithCounts,
-  getGenders
+  getGenders,
+  NbrUser
 } from '@/lib/nbrDirect'
 
 import { UserDetailResponse } from '@/lib/user'
@@ -50,9 +51,14 @@ export default function NbrDirectPage() {
   const [modalFilters, setModalFilters] = useState<FilterData>({})
   const [showFilterModal, setShowFilterModal] = useState(false)
 
-  const [userList, setUserList] = useState<any[]>([])
+  const [userList, setUserList] = useState<NbrUser[]>([])
   const [totalUsers, setTotalUsers] = useState(0)
   const [loading, setLoading] = useState(false)
+
+  // Pagination states
+  const [page, setPage] = useState(0)
+  const size = 10 // constant page size
+  const totalPages = totalUsers > 0 ? Math.ceil(totalUsers / size) : 1
 
   // =================== Effects ===================
 
@@ -99,8 +105,25 @@ export default function NbrDirectPage() {
     }
   }, [citySearchTerm])
 
-  /** 4) Whenever cityId or any filter changes => do search */
+  /**
+   * 4) Whenever cityId or any filter changes => do search
+   * Also reset the page to 0 if city/gender/filters changed
+   */
   useEffect(() => {
+    setPage(0)
+  }, [
+    selectedCityId,
+    selectedGenderId,
+    modalFilters.orientationIds,
+    modalFilters.hairColorIds,
+    modalFilters.nationalityIds,
+    modalFilters.ageMin,
+    modalFilters.ageMax,
+    modalFilters.name,
+  ])
+
+  useEffect(() => {
+    // If no city selected, clear
     if (!selectedCityId) {
       setUserList([])
       setTotalUsers(0)
@@ -118,8 +141,8 @@ export default function NbrDirectPage() {
           ageMin: modalFilters.ageMin,
           ageMax: modalFilters.ageMax,
           name: modalFilters.name,
-          page: 0,
-          size: 20,
+          page,
+          size,
         })
         setUserList(resp.users)
         setTotalUsers(resp.total)
@@ -139,6 +162,8 @@ export default function NbrDirectPage() {
     modalFilters.ageMin,
     modalFilters.ageMax,
     modalFilters.name,
+    page,
+    size,
   ])
 
   // =================== Handlers ===================
@@ -173,7 +198,10 @@ export default function NbrDirectPage() {
         <div className="md:hidden">
           {/* ============ LINE 1: Search Box ============ */}
           <div className="relative mb-2">
-            <label className="block font-medium text-sm text-gray-300 mb-1" htmlFor="city-search">
+            <label
+              className="block font-medium text-sm text-gray-300 mb-1"
+              htmlFor="city-search"
+            >
               Type your city
             </label>
             <Input
@@ -212,7 +240,7 @@ export default function NbrDirectPage() {
                 setSelectedGenderId(val ? Number(val) : null)
               }}
             >
-              <option value="">{'Gender'}</option>
+              <option value="">Gender</option>
               {genders.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -239,7 +267,10 @@ export default function NbrDirectPage() {
           <div className="flex items-center gap-4">
             {/* Search Box */}
             <div className="flex-1">
-              <label className="block font-medium text-sm text-gray-300 mb-1" htmlFor="city-search">
+              <label
+                className="block font-medium text-sm text-gray-300 mb-1"
+                htmlFor="city-search"
+              >
                 Type your city
               </label>
               <div className="relative">
@@ -285,7 +316,7 @@ export default function NbrDirectPage() {
                   setSelectedGenderId(val ? Number(val) : null)
                 }}
               >
-                <option value="">{'Gender'}</option>
+                <option value="">Gender</option>
                 {genders.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
@@ -323,7 +354,7 @@ export default function NbrDirectPage() {
             <p className="text-gray-400">No users found</p>
           ) : (
             <ul className="space-y-2 mt-2">
-              {userList.map((user) => {
+              {userList.map((user: NbrUser) => {
                 // Check if user is VIP
                 if (user.isVIP) {
                   return (
@@ -331,10 +362,10 @@ export default function NbrDirectPage() {
                       key={user.userId}
                       user={{
                         ...user,
-                        hearts: 228,
-                        comments: 38,
-                        followers: 500,
-                        matches: 30
+                        hearts: user.heartReceivedCount,
+                        comments: user.commentsCount,
+                        followers: user.followersCount,
+                        matches: user.matchesCount
                       }}
                     />
                   )
@@ -346,10 +377,10 @@ export default function NbrDirectPage() {
                       key={user.userId}
                       user={{
                         ...user,
-                        hearts: 150,
-                        comments: 25,
-                        followers: 250,
-                        matches: 20
+                        hearts: user.heartReceivedCount,
+                        comments: user.commentsCount,
+                        followers: user.followersCount,
+                        matches: user.matchesCount
                       }}
                     />
                   )
@@ -360,10 +391,10 @@ export default function NbrDirectPage() {
                     key={user.userId}
                     user={{
                       ...user,
-                      hearts: 80,
-                      comments: 12,
-                      followers: 90,
-                      matches: 8
+                      hearts: user.heartReceivedCount,
+                      comments: user.commentsCount,
+                      followers: user.followersCount,
+                      matches: user.matchesCount
                     }}
                   />
                 )
@@ -371,6 +402,29 @@ export default function NbrDirectPage() {
             </ul>
           )}
         </div>
+
+        {/* Pagination controls */}
+        {!loading && userList.length > 0 && (
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <Button
+              onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+              disabled={page === 0}
+              className='bg-brand-gold text-black hover:brightness-110'
+            >
+              Previous
+            </Button>
+            <span className="text-gray-300">
+              Page {page + 1} / {totalPages}
+            </span>
+            <Button
+              onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
+              disabled={page + 1 === totalPages}
+              className='bg-brand-gold text-black hover:brightness-110'
+            >
+              Next
+            </Button>
+          </div>
+        )}
 
         {/* Filter Modal */}
         {showFilterModal && (

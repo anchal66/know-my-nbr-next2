@@ -40,6 +40,7 @@ import { Button } from '@/components/ui/button'
 
 // DynamicSocialIcon:
 import DynamicSocialIcon from '@/components/DynamicSocialApp'
+import { FaHandshake, FaHeart, FaRegComment, FaUserFriends } from 'react-icons/fa'
 
 // ------------- Type Guard -------------
 function isOtherUserDetailResponse(
@@ -264,7 +265,7 @@ export default function ProfilePage() {
       <Banner bannerUrl={bannerUrl} />
 
       {/* Basic Info (including contact numbers) */}
-      <ProfileHeader userData={userData} canViewPrivateData={canViewPrivateData!} profilePicUrl={profilePicUrl} />
+      <ProfileHeader userData={userData} canViewPrivateData={canViewPrivateData!} profilePicUrl={profilePicUrl} openFollowModal={() => setShowFollowModal(true)} />
 
       {/* Stats */}
       <ProfileStats userData={userData} isMyProfile={isMyProfile} />
@@ -335,10 +336,12 @@ function ProfileHeader({
   userData,
   canViewPrivateData,
   profilePicUrl,
+  openFollowModal
 }: {
   userData: UserDetailResponse | OtherUserDetailResponse
   canViewPrivateData: boolean
   profilePicUrl: string | null
+  openFollowModal: () => void
 }) {
   return (
     <section className="rounded-lg border border-gray-700 bg-neutral-900 p-4 space-y-3">
@@ -362,7 +365,7 @@ function ProfileHeader({
       </div>
 
       {/* contact numbers */}
-      <ContactNumbers userData={userData} canViewPrivateData={canViewPrivateData} />
+      <ContactNumbers userData={userData} canViewPrivateData={canViewPrivateData} openFollowModal={openFollowModal} />
 
       {/* bio */}
       <div className="mt-2">
@@ -379,9 +382,11 @@ function ProfileHeader({
 function ContactNumbers({
   userData,
   canViewPrivateData,
+  openFollowModal
 }: {
   userData: UserDetailResponse | OtherUserDetailResponse
   canViewPrivateData: boolean
+  openFollowModal: () => void
 }) {
   // If MyProfile or isFollowed => we see them, otherwise check hasContactNumbers
   if (canViewPrivateData) {
@@ -419,7 +424,7 @@ function ContactNumbers({
             <br />
             <span
               className="text-brand-gold underline cursor-pointer"
-              onClick={() => alert('Open follow modal, or handle logic here')}
+              onClick={openFollowModal}
             >
               Follow them
             </span>{' '}
@@ -486,43 +491,26 @@ function ProfileStats({
     <section className="rounded-lg border border-gray-700 bg-neutral-900 p-4 space-y-2">
       <h2 className="text-lg font-semibold">Profile Stats</h2>
       <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center space-x-1">
-          <CheckCircle2 size={16} />
+        <div className="flex items-center space-x-2">
+          <FaHandshake size={18} />
           <span>Matches: {userData.matchesCount ?? 0}</span>
         </div>
-        <div className="flex items-center space-x-1">
-          <CheckCircle2 size={16} />
+        <div className="flex items-center space-x-2">
+          <FaHeart size={18} className="text-red-500" />
           <span>Hearts Received: {userData.heartReceivedCount ?? 0}</span>
         </div>
-        <div className="flex items-center space-x-1">
-          <CheckCircle2 size={16} />
+        <div className="flex items-center space-x-2">
+          <FaRegComment size={18} />
           <span>Comments: {userData.commentsCount ?? 0}</span>
         </div>
-
-        {/* If other user => might have followersCount/followsCount */}
-        {isOtherUserDetailResponse(userData) ? (
-          <>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Followers: {userData.followersCount ?? 0}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Follows: {userData.followsCount ?? 0}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Followers: {userData.followers?.length ?? 0}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Follows: {userData.follows?.length ?? 0}</span>
-            </div>
-          </>
-        )}
+        <div className="flex items-center space-x-2">
+          <FaUserFriends size={18} />
+          <span>Followers: {userData.followersCount ?? 0}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <CheckCircle2 size={18} />
+          <span>Follows: {userData.followsCount ?? 0}</span>
+        </div>
       </div>
     </section>
   )
@@ -837,7 +825,7 @@ function Locations({ locations }: { locations: LocationItem[] }) {
             key={loc.id}
             className="flex items-center space-x-2 bg-black/20 px-3 py-2 rounded"
           >
-            <MapPin size={16} className="text-brand-gold" />
+            <MapPin size={16} className={loc.isActive ? 'text-brand-gold' : 'text-gray-300'} />
             <span className="text-sm">
               {loc.name}, {loc.city?.name}, {loc.city?.state}, {loc.city?.country}
             </span>
