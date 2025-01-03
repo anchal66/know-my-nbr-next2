@@ -17,29 +17,36 @@ export interface OptionItem {
 }
 
 /** For searching or listing users */
-interface SearchResponse {
+export interface SearchResponse {
   total: number
   page: number
   size: number
-  users: {
-    userId: string
-    username: string
-    name: string
-    age: number
-    gender: { id: number; name: string }
-    orientation: { id: number; name: string }
-    media: {
-      id: string
-      type: string
-      url: string
-      orderNo: number
-      isVerified: boolean
-      isWatermarked: boolean
-    }[]
-    isVIP: boolean
-    isFeatured: boolean
-    nationality: { id: number; name: string }
+  users: NbrUser[]
+}
+
+export interface NbrUser {
+  userId: string
+  username: string
+  name: string
+  age: number
+  gender: { id: number; name: string }
+  orientation: { id: number; name: string }
+  media: {
+    id: string
+    type: string
+    url: string
+    orderNo: number
+    isVerified: boolean
+    isWatermarked: boolean
   }[]
+  isVIP: boolean
+  isFeatured: boolean
+  nationality: { id: number; name: string }
+  followersCount: number
+  followsCount: number
+  matchesCount: number
+  heartReceivedCount: number
+  commentsCount: number
 }
 
 /** ========================= API calls ========================= */
@@ -121,7 +128,7 @@ export async function searchUsers(params: SearchParams): Promise<SearchResponse>
     ageMax,
     sortBy,
     page = 0,
-    size = 20
+    size = 10
   } = params
 
   const query = new URLSearchParams()

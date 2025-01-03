@@ -498,10 +498,6 @@ function ProfileStats({
           <CheckCircle2 size={16} />
           <span>Comments: {userData.commentsCount ?? 0}</span>
         </div>
-
-        {/* If other user => might have followersCount/followsCount */}
-        {isOtherUserDetailResponse(userData) ? (
-          <>
             <div className="flex items-center space-x-1">
               <CheckCircle2 size={16} />
               <span>Followers: {userData.followersCount ?? 0}</span>
@@ -510,19 +506,6 @@ function ProfileStats({
               <CheckCircle2 size={16} />
               <span>Follows: {userData.followsCount ?? 0}</span>
             </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Followers: {userData.followers?.length ?? 0}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <CheckCircle2 size={16} />
-              <span>Follows: {userData.follows?.length ?? 0}</span>
-            </div>
-          </>
-        )}
       </div>
     </section>
   )
